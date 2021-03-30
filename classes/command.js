@@ -202,7 +202,7 @@ module.exports = class Command extends require("./template.js") {
 			console.error(`Command ${this.ID} has invalid code definition!`, e);
 			this.Code = async () => ({
 				success: false,
-				reply: "Command has invalid code definition! Please make sure to let @supinic know about this!"
+				reply: "Command has invalid code definition! Please make sure to let @QuinnDT know about this!"
 			});
 		}
 
@@ -215,7 +215,7 @@ module.exports = class Command extends require("./template.js") {
 				console.warn(`Command has invalid static data definition!`, { commandName: this.Name, error: e });
 				this.Code = () => ({
 					success: false,
-					reply: "Command has invalid code definition! Please make sure to let @supinic know about this!"
+					reply: "Command has invalid code definition! Please make sure to let @QuinnDT know about this!"
 				});
 			}
 
@@ -230,7 +230,7 @@ module.exports = class Command extends require("./template.js") {
 				console.warn(`Command ${this.ID} has invalid static data type!`, e);
 				this.Code = async () => ({
 					success: false,
-					reply: "Command has invalid code definition! Please make sure to let @supinic know about this!"
+					reply: "Command has invalid code definition! Please make sure to let @QuinnDT know about this!"
 				});
 			}
 		}
