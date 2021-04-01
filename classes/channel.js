@@ -183,7 +183,7 @@ module.exports = class Channel extends require("./template.js") {
         await sb.Query.raw([
             "CREATE TABLE IF NOT EXISTS chat_line.`" + name + "` (",
             "`ID` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,",
-            "`User_Alias` INT(11) NOT NULL,",
+            "`User_Alias` INT(10) UNSIGNED NOT NULL,",
             "`Text` VARCHAR(" + limit + "),",
             "`Posted` TIMESTAMP(3) NULL DEFAULT NULL,",
             "PRIMARY KEY (`ID`),",
