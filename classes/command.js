@@ -652,7 +652,7 @@ module.exports = class Command extends require("./template.js") {
 						isPrivateMessage
 					};
 					const errorID = await sb.SystemLogger.sendError("Command", e, [loggingContext, identifier, ...args]);
-					const prettify = (channelData?.Data.developer)
+					const prettify = (channelData?.Data?.developer)
 						? sb.Config.get("COMMAND_ERROR_DEVELOPER")
 						: sb.Config.get("COMMAND_ERROR_GENERIC");
 
