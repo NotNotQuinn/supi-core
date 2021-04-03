@@ -128,7 +128,7 @@ module.exports = class Reminder extends require("./template.js") {
                     Created: new sb.Date(),
                     Active: true,
                     Schedule: null,
-                    Text: `A timed reminder fired while you were AFK, check it here: https://supinic.com/bot/reminder/lookup?ID=${this.ID}`,
+                    Text: `A timed reminder fired while you were AFK, check it out using: '${sb.Command.prefix}check reminder ${this.ID}'!`,
                     Private_Message: true
                 }, true);
             }
@@ -450,12 +450,11 @@ module.exports = class Reminder extends require("./template.js") {
                 // If the result message would be longer than twice the channel limit, post a list of reminder IDs
                 // instead along with a link to the website, where the user can check them out.
                 if (message.length > (limit * 2)) {
-                    const listID = reminders.filter(i => !i.Private_Message).map(i => `ID=${i.ID}`).join("&");
+                    const listIDs = reminders.filter(i => !i.Private_Message).map(i => `${i.ID}`).join(", ");
                     message = sb.Utils.tag.trim `
                         Hey ${notifySymbol}${targetUserData.Name},
                         you have reminders, but they're too long to be posted here. 
-                        Check them out here:
-                        https://supinic.com/bot/reminder/lookup?${listID}
+                        Check them out using this: ${listIDs}
                     `;
                 }
 
@@ -468,12 +467,12 @@ module.exports = class Reminder extends require("./template.js") {
                 }
             }
             else {
-                const listID = reminders.map(i => `ID=${i.ID}`).join("&");
+                const listIDs = reminders.map(i => `${i.ID}`).join(", ");
                 const message = sb.Utils.tag.trim `
                     Hey ${notifySymbol}${targetUserData.Name},
-                    the banphrase check for your reminders failed.
-                    Check them out here:
-                    https://supinic.com/bot/reminder/lookup?${listID}
+                    the banphrase check for your reminders failed. IDs: ${listIds}
+                    Check them out like this: ${sb.Command.prefix}check reminder (ID)
+                    (although its likely you wont be able to view them, anyways)
                 `;
 
                 await channelData.send(message);
