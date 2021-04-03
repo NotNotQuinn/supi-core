@@ -1,7 +1,7 @@
 {
   "name": "supi-core",
   "version": "2.1.0",
-  "description": "Supinic's projects' core modules, created in a global namespace",
+  "description": "Fork of supinic's projects' core modules, created in a global namespace",
   "main": "index.js",
   "dependencies": {
     "async-markov": "github:supinic/async-markov",
