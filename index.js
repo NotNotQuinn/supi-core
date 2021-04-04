@@ -14,24 +14,23 @@ module.exports = (async function (namespace = "sb", options = {}) {
 		"classes/cron",
 		"singletons/cache",
 		"singletons/cooldown-manager",
-		"singletons/logger",
 		"singletons/system-log",
 		"singletons/vlc-connector",
 		"singletons/twitter",
 		"singletons/internal-request",
-		"singletons/local-request",
 		"singletons/runtime",
 		"singletons/sandbox",
-
+		
 		"classes/got",
 		"singletons/pastebin",
-
+		
 		"classes/platform",
 		"classes/filter",
 		"classes/command",
 		"classes/channel",
 		"classes/chat-module",
 		"classes/user",
+		"singletons/logger",
 		"classes/afk",
 		"classes/banphrase",
 		"classes/reminder"
