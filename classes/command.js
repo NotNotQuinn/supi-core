@@ -84,7 +84,15 @@ class Context {
 		return "(no emote found)";
 	}
 
-	get invocation () { return this.#invocation; }
+	get invocation () {
+		// edge case
+		// this.#invocation can be type of Command or number because it can be passed to Command.checkAndExecute
+		// this is expected to be a string inside the commands
+		if (typeof this.#invocation === "string")
+			return this.#invocation;
+		else
+			return Command.get(this.#invocation).Name
+	}
 	get user () { return this.#user; }
 	get channel () { return this.#channel; }
 	get platform () { return this.#platform; }
