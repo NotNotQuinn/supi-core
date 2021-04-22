@@ -50,23 +50,19 @@ module.exports = (function () {
 
 			if (process.env.MARIA_SOCKET_PATH) {
 				this.pool = Maria.createPool({
-					socketPath: "/var/run/mysqld/mysqld.sock",
 					user: process.env.MARIA_USER,
 					password: process.env.MARIA_PASSWORD,
-					connectionLimit: process.env.MARIA_CONNECTION_LIMIT || 300,
-					multipleStatements: true,
-					leakDetectionTimeout: 60_000
+					socketPath: process.env.MARIA_SOCKET_PATH,
+					connectionLimit: process.env.MARIA_CONNECTION_LIMIT ?? 25
 				});
 			}
 			else if (process.env.MARIA_HOST) {
 				this.pool = Maria.createPool({
 					user: process.env.MARIA_USER,
+					password: process.env.MARIA_PASSWORD,
 					host: process.env.MARIA_HOST,
 					port: process.env.MARIA_PORT ?? 3306,
-					password: process.env.MARIA_PASSWORD,
-					connectionLimit: process.env.MARIA_CONNECTION_LIMIT || 300,
-					multipleStatements: true,
-					leakDetectionTImeout: 60_000
+					connectionLimit: process.env.MARIA_CONNECTION_LIMIT ?? 25
 				});
 			}
 			else {
@@ -220,7 +216,7 @@ module.exports = (function () {
 					name: table, database: database, path: path, escapedPath: escapedPath, columns: []
 				};
 
-				const data = await this.raw("SELECT * FROM " + path + " WHERE 1 = 0");
+				const data = await this.raw("SELECT * FROM " + escapedPath + " WHERE 1 = 0");
 				for (const column of data.meta) {
 					obj.columns.push({
 						name: column.name(),

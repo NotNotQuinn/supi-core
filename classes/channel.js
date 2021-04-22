@@ -248,6 +248,15 @@ module.exports = class Channel extends Template {
         return this.Platform.send(message, this);
     }
 
+    async getStreamData () {
+        const streamData = await this.getCacheData("stream-data");
+        return streamData ?? {};
+    }
+
+    async setStreamData (data) {
+        return await this.setCacheData("stream-data", data, { expiry: 3_600_000 });
+    }
+
     async toggleAmbassador (userData) {
         this.Data.ambassadors = this.Data.ambassadors ?? [];
 

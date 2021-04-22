@@ -575,6 +575,28 @@ module.exports = class Reminder extends require("./template.js") {
             success: true
         };
     }
+
+    static async createRelayLink (endpoint, params) {
+        const relay = await sb.Got("Supinic", {
+            method: "POST",
+            url: "relay",
+            throwHttpErrors: false,
+            json: {
+                url: `/bot/reminder/${endpoint}?${params}`
+            }
+        });
+
+        let link;
+        if (relay.statusCode === 200) {
+            link = relay.body.data.link;
+        }
+        else {
+            console.warn("Relay creation failed", { relay, params });
+            link = `https://supinic.com/bot/reminder/${endpoint}?${params}`;
+        }
+
+        return link;
+    }
 };
 
 /**

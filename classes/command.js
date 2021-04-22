@@ -192,6 +192,18 @@ class Command extends require("./template.js") {
 		Dynamic_Description: { type: "descriptor" }
 	};
 
+	/**
+	 * Privileged command characters are such characters, that when a command is invoked, there does not have to be any
+	 * whitespace separating the character and the first argument.
+	 * Consider the bot's prefix to be "!", and the test command string to be `!$foo bar`.
+	 * @example If "$" is not privileged:
+	 * prefix = "!"; command = "$foo"; arguments = ["bar"];
+	 * @example If "$" is privileged:
+	 * prefix = "!"; command = "$"; arguments = ["foo", "bar"];
+	 * @type {[string]}
+	 */
+	static privilegedCommandCharacters = ["$"];
+
 	constructor (data) {
 		super();
 
@@ -199,7 +211,7 @@ class Command extends require("./template.js") {
 
 		this.Name = data.Name;
 		if (typeof this.Name !== "string" || this.Name.length === 0) {
-			console.error(`Command ID ${this.ID} has an unusuable name`, data.Name);
+			console.error(`Command ID ${this.ID} has an unusable name`, data.Name);
 			this.Name = ""; // just a precaution so that the command never gets found out
 		}
 
@@ -262,30 +274,6 @@ class Command extends require("./template.js") {
 			}
 
 			this.Params = params;
-		}
-
-		if (this.Flags.linkOnly) {
-			if (!this.Params) {
-				console.warn("Command has linkOnly flag, but no params are defined.", { commandName: this.Name });
-				this.Params.push({
-					name: "linkOnly",
-					type: "boolean"
-				});
-			}
-			else {
-				const param = this.Params.find(i => i.name === "linkOnly");
-				if (!param) {
-					console.warn("Command has linkOnly flag, but no linkOnly param.", { commandName: this.Name });
-					this.Params.push({
-						name: "linkOnly",
-						type: "boolean"
-					});
-				}
-				else if (param.type !== "boolean") {
-					console.warn("Command has linkOnly flag, but the linkOnly param is not boolean.", { data, command: this });
-					param.type = "boolean";
-				}
-			}
 		}
 
 		Object.freeze(this.Flags);
@@ -519,6 +507,18 @@ class Command extends require("./template.js") {
 			return {success: false, reason: "channel-" + channelData.Mode.toLowerCase()};
 		}
 
+		// Special parsing of privileged characters - they can be joined with other characters, and still be usable
+		// as a separate command.
+		if (Command.privilegedCommandCharacters.length > 0) {
+			for (const char of Command.privilegedCommandCharacters) {
+				if (identifier.startsWith(char)) {
+					argumentArray.unshift(identifier.replace(char, ""));
+					identifier = char;
+					break;
+				}
+			}
+		}
+
 		const command = Command.get(identifier);
 		if (!command) {
 			return {success: false, reason: "no-command"};
@@ -527,15 +527,14 @@ class Command extends require("./template.js") {
 		// Check for cooldowns, return if it did not pass yet.
 		// If skipPending flag is set, do not check for pending status.
 		const channelID = (channelData?.ID ?? Command.#privateMessageChannelID);
-		if (
-			!userData.Data.cooldownImmunity
-			&& !sb.CooldownManager.check(
-				channelID,
-				userData.ID,
-				command.ID,
-				Boolean(options.skipPending)
-			)
-		) {
+		const cooldownCheck = sb.CooldownManager.check(
+			channelID,
+			userData.ID,
+			command.ID,
+			Boolean(options.skipPending)
+		);
+
+		if (!cooldownCheck) {
 			if (!options.skipPending) {
 				const pending = sb.CooldownManager.fetchPending(userData.ID);
 				if (pending) {
@@ -571,7 +570,22 @@ class Command extends require("./template.js") {
 
 		if (!filterData.success) {
 			sb.CooldownManager.unsetPending(userData.ID);
-			sb.CooldownManager.set(channelID, userData.ID, command.ID, command.Cooldown);
+
+			let length = command.Cooldown;
+			const cooldownFilter = sb.Filter.getCooldownModifiers({
+				platform: channelData?.Platform ?? null,
+				channel: channelData,
+				command: command,
+				invocation: identifier,
+				user: userData
+			});
+
+			if (cooldownFilter) {
+				length = cooldownFilter.applyData(length);
+			}
+
+			sb.CooldownManager.set(channelID, userData.ID, command.ID, length);
+
 			await sb.Runtime.incrementRejectedCommands();
 
 			if (filterData.filter.Response === "Reason" && typeof filterData.reply === "string") {
@@ -704,10 +718,10 @@ class Command extends require("./template.js") {
 
 			let result = null;
 			if (execution?.reply) {
-				result = execution.reply.slice(0, 300);
+				result = execution.reply.trim().slice(0, 300);
 			}
 			else if (execution?.partialReplies) {
-				result = execution.partialReplies.map(i => i.message).join(" ").slice(0, 300);
+				result = execution.partialReplies.map(i => i.message).join(" ").trim().slice(0, 300);
 			}
 
 			await sb.Runtime.incrementCommandsCounter();
@@ -789,36 +803,6 @@ class Command extends require("./template.js") {
 			};
 		}
 
-		// This should be removed once all deprecated calls are refactored
-		if (channelData && execution?.meta?.skipCooldown === true) {
-			console.warn("Deprecated return value - skipCooldown (use cooldown: null instead)", command.ID);
-		}
-
-		// Check if a link-only flagged command returns a proper link to be used, if the command didn't fail
-		if (execution && execution.success !== false && command.Flags.linkOnly) {
-			if (typeof execution.link !== "string" && execution.link !== null) {
-				throw new sb.Error({
-					message: "Commands supporting link-only mode must always return a possible link as string or null",
-					args: {
-						command: command.ID
-					}
-				});
-			}
-
-			if (context.params.linkOnly === true) {
-				if (execution.link === null) {
-					execution.success = false;
-					execution.reply = "No link is present in command result!";
-				}
-				else {
-					execution.reply = execution.link;
-				}
-
-				delete execution.link;
-
-			}
-		}
-
 		Command.handleCooldown(channelData, userData, command, execution?.cooldown);
 
 		if (!execution?.reply && !execution?.partialReplies) {
@@ -854,7 +838,7 @@ class Command extends require("./template.js") {
 			console.warn(`Execution of command "${command.Name}" did not result with execution.reply of type string`);
 		}
 
-		execution.reply = String(execution.reply);
+		execution.reply = String(execution.reply).trim();
 
 		const metaSkip = Boolean(!execution.partialReplies && (options.skipBanphrases || execution?.meta?.skipBanphrases));
 		if (!command.Flags.skipBanphrase && !metaSkip) {
@@ -948,13 +932,28 @@ class Command extends require("./template.js") {
 						cooldown = { length: cooldown };
 					}
 
+					let { length } = cooldown;
 					const {
 						channel = channelID,
 						user = userData.ID,
 						command = commandData.ID,
-						length,
+						ignoreCooldownFilters = false,
 						options = {}
 					} = cooldown;
+
+					if (!ignoreCooldownFilters) {
+						const cooldownFilter = sb.Filter.getCooldownModifiers({
+							platform: channelData?.Platform ?? null,
+							channel: channelData,
+							command: commandData,
+							invocation: null, // @todo
+							user: userData
+						});
+
+						if (cooldownFilter) {
+							length = cooldownFilter.applyData(length);
+						}
+					}
 
 					sb.CooldownManager.set(channel, user, command, length, options);
 				}
@@ -964,7 +963,20 @@ class Command extends require("./template.js") {
 			}
 		}
 		else {
-			sb.CooldownManager.set(channelID, userData.ID, commandData.ID, commandData.Cooldown);
+			let length = commandData.Cooldown ?? 0;
+			const cooldownFilter = sb.Filter.getCooldownModifiers({
+				platform: channelData?.Platform ?? null,
+				channel: channelData,
+				command: commandData,
+				invocation: null, // @todo
+				user: userData
+			});
+
+			if (cooldownFilter) {
+				length = cooldownFilter.applyData(length);
+			}
+
+			sb.CooldownManager.set(channelID, userData.ID, commandData.ID, length);
 		}
 
 		sb.CooldownManager.unsetPending(userData.ID);
@@ -1161,7 +1173,7 @@ module.exports = Command;
  * @property {string} [reply] Command result as a string to reply. If not provided, no message should be sent
  * @property {Object} [cooldown] Dynamic cooldown settings
  * @property {string} [reason] Symbolic description of why command execution failed - used internally
- * @property {Object} [meta] Any other information passed back from the commend execution
+ * @property {Object} [meta] Any other information passed back from the command execution
  */
 
 /**
@@ -1194,7 +1206,6 @@ module.exports = Command;
  * @property {boolean} pipe If true, the command can be used as a part of the "pipe" command.
  * @property {boolean} mention If true, command will attempt to mention its invokers by adding their username at the start.
  * This also requires the channel to have this option enabled.
- * @property {boolean} linkOnly If true, the command will accept "linkOnly:true" as one of its arguments, and if possible, returns just a link, with no text included.
  * @property {boolean} useParams If true, all arguments in form of key:value will be parsed into an object
  * @property {boolean} nonNullable If true, the command cannot be directly piped into the null command
  */
