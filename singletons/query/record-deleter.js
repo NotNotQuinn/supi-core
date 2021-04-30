@@ -1,4 +1,4 @@
-/* global sb */
+/* global stolen_sb */
 /**
  * Represents the UPDATE sql statement.
  */
@@ -75,7 +75,7 @@ module.exports = class RecordDeleter {
 	 * If there is a need to delete without WHERE, this flag must be set.
 	 * Otherwise, a no-condition DELETE will not be performed, and ends with an exception.
 	 * @returns {RecordDeleter}
-	 * @throws {sb.Error} If no FROM database/table have been provided.
+	 * @throws {stolen_sb.Error} If no FROM database/table have been provided.
 	 */
 	confirm () {
 		this.#confirmedFullDelete = true;
@@ -85,11 +85,11 @@ module.exports = class RecordDeleter {
 	/**
 	 * Translates the RecordDeleter to its SQL representation.
 	 * @returns {Promise<string[]>}
-	 * @throws {sb.Error} If no FROM database/table have been provided.
+	 * @throws {stolen_sb.Error} If no FROM database/table have been provided.
 	 */
 	async toSQL () {
 		if (!this.#deleteFrom.database || !this.#deleteFrom.table) {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "No UPDATE database/table in RecordUpdater - invalid definition"
 			});
 		}
@@ -102,7 +102,7 @@ module.exports = class RecordDeleter {
 		}
 		else {
 			if (!this.#confirmedFullDelete) {
-				throw new sb.Error({
+				throw new stolen_sb.Error({
 					message: "Unconfirmed full table deletion",
 					args: {
 						from: this.#deleteFrom

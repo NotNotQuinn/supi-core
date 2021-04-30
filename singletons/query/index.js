@@ -1,4 +1,4 @@
-/* global sb */
+/* global stolen_sb */
 module.exports = (function () {
 	"use strict";
 	const Maria = require("mariadb");
@@ -19,7 +19,7 @@ module.exports = (function () {
 	 * {@link Recordset}: Result of a compound SELECT statement
 	 * {@link Batch}: A tool to INSERT multiple rows in one statement, for specified columns
 	 * {@link RecordUpdater}: UPDATEs specified columns with values, with specified condition(s)
-	 * @name sb.Query
+	 * @name stolen_sb.Query
 	 * @type Query()
 	 */
 	return class Query extends Template {
@@ -42,7 +42,7 @@ module.exports = (function () {
 			super();
 
 			if (!process.env.MARIA_USER || !process.env.MARIA_PASSWORD || (!process.env.MARIA_HOST && !process.env.MARIA_SOCKET_PATH)) {
-				throw new sb.Error({ message: "Database access must be initialized first" });
+				throw new stolen_sb.Error({ message: "Database access must be initialized first" });
 			}
 
 			/** @type {TableDefinition[]} */
@@ -70,7 +70,7 @@ module.exports = (function () {
 				});
 			}
 			else {
-				throw new sb.Error({
+				throw new stolen_sb.Error({
 					message: "Not enough info provided in process.env for Query to initialize"
 				})
 			}
@@ -111,7 +111,7 @@ module.exports = (function () {
 					},
 					hrtime: timing,
 					query,
-					timestamp: new sb.Date().sqlDateTime(),
+					timestamp: new stolen_sb.Date().sqlDateTime(),
 					stack: new Error().stack
 				});
 			}
@@ -269,12 +269,12 @@ module.exports = (function () {
 		async batchUpdate (data, options = {}) {
 			const { batchSize, callback, staggerDelay } = options;
 			if (typeof callback !== "function") {
-				throw new sb.Error({
+				throw new stolen_sb.Error({
 					message: `Callback must be a function, received ${typeof callback}`
 				});
 			}
 
-			const limit = (sb.Utils.isValidInteger(batchSize))
+			const limit = (stolen_sb.Utils.isValidInteger(batchSize))
 				? batchSize
 				: updateBatchLimit;
 
@@ -286,7 +286,7 @@ module.exports = (function () {
 				return sql.join(" ") + ";";
 			}));
 
-			if (sb.Utils.isValidInteger(staggerDelay)) {
+			if (stolen_sb.Utils.isValidInteger(staggerDelay)) {
 				let counter = 0;
 				for (let i = 0; i <= queries.length; i += limit) {
 					let slice = queries.slice(i, i + limit).join("\n");
@@ -359,7 +359,7 @@ module.exports = (function () {
 		/**
 		 * Converts a SQL value and type to a Javascript value
 		 * SQL TINYINT(1) -> JS boolean
-		 * SQL DATE/DATETIME/TIMESTAMP -> JS sb.Date
+		 * SQL DATE/DATETIME/TIMESTAMP -> JS stolen_sb.Date
 		 * SQL JSON -> JS Object
 		 * SQL *INT/*TEXT/*CHAR -> JS number/string
 		 * @param {*} value
@@ -377,7 +377,7 @@ module.exports = (function () {
 				// case "TIME":
 				case "DATE":
 				case "DATETIME":
-				case "TIMESTAMP": return new sb.Date(value);
+				case "TIMESTAMP": return new stolen_sb.Date(value);
 
 				case "LONGLONG": return BigInt(value);
 
@@ -391,13 +391,13 @@ module.exports = (function () {
 		 * Converts a Javascript value to its SQL counterpart
 		 * JS null -> SQL NULL
 		 * JS boolean -> SQL TINYINT(1)
-		 * JS Date/sb.Date -> SQL TIME/DATE/DATETIME/TIMESTAMP
+		 * JS Date/stolen_sb.Date -> SQL TIME/DATE/DATETIME/TIMESTAMP
 		 * JS string -> escaped SQL VARCHAR/*TEXT
 		 * JS number -> SQL *INT
 		 * @param {*} value Javascript value to convert
 		 * @param {string} targetType Target SQL type
 		 * @returns {*} Properly formatted SQL value
-		 * @throws {sb.Error} If a type mismatch is encountered
+		 * @throws {stolen_sb.Error} If a type mismatch is encountered
 		 */
 		convertToSQL (value, targetType) {
 			let sourceType = typeof value;
@@ -407,7 +407,7 @@ module.exports = (function () {
 			}
 			else if (targetType === "TINY") {
 				if (sourceType !== "boolean") {
-					throw new sb.Error({
+					throw new stolen_sb.Error({
 						message: "Expected value type: boolean",
 						args: value
 					});
@@ -421,11 +421,11 @@ module.exports = (function () {
 			}
 			else if (targetType === "TIME" || targetType === "DATE" || targetType === "DATETIME" || targetType === "TIMESTAMP")  {
 				if (value instanceof Date) {
-					value = new sb.Date(value);
+					value = new stolen_sb.Date(value);
 				}
 
-				if (!(value instanceof sb.Date)) {
-					throw new sb.Error({
+				if (!(value instanceof stolen_sb.Date)) {
+					throw new stolen_sb.Error({
 						message: "Expected value type: date",
 						args: value
 					});
@@ -493,80 +493,80 @@ module.exports = (function () {
 		 * @param {string} type
 		 * @param {*} param
 		 * @returns {string}
-		 * @throws {sb.Error} If an unrecognized format symbol was encountered.
+		 * @throws {stolen_sb.Error} If an unrecognized format symbol was encountered.
 		 */
 		parseFormatSymbol (type, param) {
 			switch (type) {
 				case "b":
 					if (typeof param !== "boolean") {
-						throw new sb.Error({ message: "Expected boolean, got " + param });	
+						throw new stolen_sb.Error({ message: "Expected boolean, got " + param });	
 					} 
 					
 					return (param ? "1" : "0");
 
 				case "d":
-					if (param instanceof Date && !(param instanceof sb.Date)) {
-						param = new sb.Date(param);
+					if (param instanceof Date && !(param instanceof stolen_sb.Date)) {
+						param = new stolen_sb.Date(param);
 					}					
-					if (!(param instanceof sb.Date)) {
-						throw new sb.Error({ message: "Expected sb.Date, got " + param });
+					if (!(param instanceof stolen_sb.Date)) {
+						throw new stolen_sb.Error({ message: "Expected stolen_sb.Date, got " + param });
 					}
 					
 					return "'" + param.sqlDate() + "'";
 
 				case "dt":
-					if (param instanceof Date && !(param instanceof sb.Date)) {
-						param = new sb.Date(param);
+					if (param instanceof Date && !(param instanceof stolen_sb.Date)) {
+						param = new stolen_sb.Date(param);
 					}					
-					if (!(param instanceof sb.Date)) {
-						throw new sb.Error({ message: "Expected sb.Date, got " + param });
+					if (!(param instanceof stolen_sb.Date)) {
+						throw new stolen_sb.Error({ message: "Expected stolen_sb.Date, got " + param });
 					}
 
 					return "'" + param.sqlDateTime() + "'";
 
 				case "n":
 					if (typeof param !== "number") {
-						throw new sb.Error({ message: "Expected number, got " + param });
+						throw new stolen_sb.Error({ message: "Expected number, got " + param });
 					}
 					else if (Number.isNaN(param)) {
-						throw new sb.Error({ message: `Cannot use ${param} as a number in SQL` });
+						throw new stolen_sb.Error({ message: `Cannot use ${param} as a number in SQL` });
 					}
 					
 					return String(param);
 
 				case "s":
 					if (typeof param !== "string") {
-						throw new sb.Error({ message: "Expected string, got " + param });
+						throw new stolen_sb.Error({ message: "Expected string, got " + param });
 					}
 					
 					return "'" + this.escapeString(param) + "'";
 
 				case "t":
-					if (param instanceof Date && !(param instanceof sb.Date)) {
-						param = new sb.Date(param);
+					if (param instanceof Date && !(param instanceof stolen_sb.Date)) {
+						param = new stolen_sb.Date(param);
 					}
-					if (!(param instanceof sb.Date)) {
-						throw new sb.Error({ message: "Expected sb.Date, got " + param });
+					if (!(param instanceof stolen_sb.Date)) {
+						throw new stolen_sb.Error({ message: "Expected stolen_sb.Date, got " + param });
 					}
 					
 					return param.sqlTime();
 
 				case "s+":
 					if (!Array.isArray(param)) {
-						throw new sb.Error({ message: "Expected Array, got " + param });
+						throw new stolen_sb.Error({ message: "Expected Array, got " + param });
 					}
 					else if (param.some(i => typeof i !== "string")) {
-						throw new sb.Error({ message: "Array must contain strings only" });
+						throw new stolen_sb.Error({ message: "Array must contain strings only" });
 					}
 					
 					return "(" + param.map(i => this.escapeString(i)).map(i => `'${i}'`).join(",") + ")";
 
 				case "n+":
 					if (!Array.isArray(param)) {
-						throw new sb.Error({ message: "Expected Array, got " + param });
+						throw new stolen_sb.Error({ message: "Expected Array, got " + param });
 					}
 					else if (param.some(i => typeof i !== "number" || Number.isNaN(i))) {
-						throw new sb.Error({ message: "Array must contain proper numbers only" });
+						throw new stolen_sb.Error({ message: "Array must contain proper numbers only" });
 					}
 					
 					return "(" + param.join(",") + ")";
@@ -576,7 +576,7 @@ module.exports = (function () {
 				case "like*":
 				case "*like*": {
 					if (typeof param !== "string") {
-						throw new sb.Error({ message: "Expected string, got " + param });
+						throw new stolen_sb.Error({ message: "Expected string, got " + param });
 					}
 
 					const start = (type.startsWith("*")) ? "%" : "";
@@ -586,7 +586,7 @@ module.exports = (function () {
 					return ` LIKE '${start}${string}${end}'`;
 				}
 
-				default: throw new sb.Error({
+				default: throw new stolen_sb.Error({
 					message: "Unknown Recordset replace parameter",
 					args: type
 				});
@@ -595,7 +595,7 @@ module.exports = (function () {
 
 		setLogThreshold (value) {
 			if (typeof value !== "number") {
-				throw new sb.Error({
+				throw new stolen_sb.Error({
 					message: "Logging threshold must be a number",
 					args: { value }
 				});

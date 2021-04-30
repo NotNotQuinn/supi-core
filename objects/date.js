@@ -1,6 +1,6 @@
 /**
  * Extended and simpler-to-use version of native Date
- * @memberof sb
+ * @memberof stolen_sb
  * @namespace Date
  */
 module.exports = class Date extends global.Date {
@@ -17,8 +17,8 @@ module.exports = class Date extends global.Date {
 
 	/**
 	 * Compares two instances for their equality
-	 * @param {sb.Date} from
-	 * @param {sb.Date} to
+	 * @param {stolen_sb.Date} from
+	 * @param {stolen_sb.Date} to
 	 * @returns {boolean}
 	 */
 	static equals(from, to) {
@@ -131,7 +131,7 @@ module.exports = class Date extends global.Date {
 
 	/**
 	 * @param {number} offset in minutes
-	 * @returns {sb.Date}
+	 * @returns {stolen_sb.Date}
 	 */
 	setTimezoneOffset(offset) {
 		offset = Number(offset);
@@ -150,7 +150,7 @@ module.exports = class Date extends global.Date {
 	/**
 	 * Sets the provided time units to zero.
 	 * @param {...<"h"|"m"|"s"|"ms">} units
-	 * @returns {sb.Date}
+	 * @returns {stolen_sb.Date}
 	 */
 	discardTimeUnits(...units) {
 		for (const unit of units) {

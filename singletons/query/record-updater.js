@@ -1,4 +1,4 @@
-/* global sb */
+/* global stolen_sbolen_sb */
 /**
  * Represents the UPDATE sql statement.
  */
@@ -23,7 +23,7 @@ module.exports = class RecordUpdater {
 
 	priority (value) {
 		if (!["normal", "low"].includes(value)) {
-			throw new sb.Error({
+			throw new stolen_sbolen_sb.Error({
 				message: "Incorrect priority value",
 				args: { value }
 			});
@@ -97,17 +97,17 @@ module.exports = class RecordUpdater {
 	/**
 	 * Translates the RecordUpdater to its SQL representation.
 	 * @returns {Promise<string[]>}
-	 * @throws {sb.Error} If no UPDATE database/table have been provided.
-	 * @throws {sb.Error} If no SET columns have been provided.
+	 * @throws {stolen_sbolen_sb.Error} If no UPDATE database/table have been provided.
+	 * @throws {stolen_sbolen_sb.Error} If no SET columns have been provided.
 	 */
 	async toSQL () {
 		if (!this.#update.database || !this.#update.table) {
-			throw new sb.Error({
+			throw new stolen_sbolen_sb.Error({
 				message: "No UPDATE database/table in RecordUpdater - invalid definition"
 			});
 		}
 		else if (this.#set.length === 0) {
-			throw new sb.Error({
+			throw new stolen_sbolen_sb.Error({
 				message: "No SET in RecordUpdater - invalid definition"
 			});
 		}
@@ -123,7 +123,7 @@ module.exports = class RecordUpdater {
 		for (const { column, value } of this.#set) {
 			const definition = columns.find(i => i.name === column);
 			if (!definition) {
-				throw new sb.Error({
+				throw new stolen_sbolen_sb.Error({
 					message: `Unrecognized column "${column}"`
 				});
 			}

@@ -1,4 +1,4 @@
-/* global sb */
+/* global stolen_sb */
 /**
  * Represents the result of a SELECT statement with (usually) more than one result row.
  */
@@ -63,13 +63,13 @@ module.exports = class Recordset {
 	 * Sets the LIMIT.
 	 * @param {number} number
 	 * @returns {Recordset}
-	 * @throws {sb.Error} If number is not a finite number
+	 * @throws {stolen_sb.Error} If number is not a finite number
 	 */
 	limit (number) {
 		this.#limit = Number(number);
 
 		if (!Number.isFinite(this.#limit)) {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "Limit must be a finite number",
 				args: number
 			});
@@ -82,13 +82,13 @@ module.exports = class Recordset {
 	 * Sets the OFFSET.
 	 * @param {number} number
 	 * @returns {Recordset}
-	 * @throws {sb.Error} If number is not a finite number
+	 * @throws {stolen_sb.Error} If number is not a finite number
 	 */
 	offset (number) {
 		this.#offset = Number(number);
 
 		if (!Number.isFinite(this.#offset)) {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "Offset must be a finite number",
 				args: number
 			});
@@ -115,7 +115,7 @@ module.exports = class Recordset {
 	 */
 	from (database, table) {
 		if (!database || !table) {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "Recordset: database and table must be provided",
 				args: {
 					db: database,
@@ -211,7 +211,7 @@ module.exports = class Recordset {
 			this.#having = this.#having.concat(format);
 		}
 		else {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "Recordset: Unrecognized condition wrapper option",
 				args: arguments
 			})
@@ -249,7 +249,7 @@ module.exports = class Recordset {
 			} = database;
 
 			if (!toTable || !toDatabase) {
-				throw new sb.Error({
+				throw new stolen_sb.Error({
 					message: "Missing compulsory arguments for join",
 					args: target
 				});
@@ -310,7 +310,7 @@ module.exports = class Recordset {
 
 		const joinType = (left) ? "leftJoin" : "join";
 		if (!referenceTable || !targetTable) {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "Both referenceTable and targetTable must be filled in!"
 			});
 		}
@@ -359,7 +359,7 @@ module.exports = class Recordset {
 	/**
 	 * Translates Recordset to its SQL representation
 	 * @returns {string[]}
-	 * @throws {sb.Error} If no SELECT statement has been provided. The entire Recordset makes no sense should this happen
+	 * @throws {stolen_sb.Error} If no SELECT statement has been provided. The entire Recordset makes no sense should this happen
 	 */
 	toSQL () {
 		if (this.#raw) {
@@ -367,7 +367,7 @@ module.exports = class Recordset {
 		}
 
 		if (this.#select.length === 0) {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "No SELECT in Recordset - invalid definition"
 			});
 		}
@@ -410,7 +410,7 @@ module.exports = class Recordset {
 		let result = [];
 		for (const row of rows) {
 			if (this.#flat && typeof row[this.#flat] === "undefined") {
-				throw new sb.Error({
+				throw new stolen_sb.Error({
 					message: `Column ${this.#flat} is not included in the result`,
 					args: {
 						column: this.#flat,

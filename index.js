@@ -1,43 +1,13 @@
-module.exports = (async function (namespace = "sb", options = {}) {
+module.exports = (async function (namespace = "stolen_sb", options = {}) {
 	globalThis[namespace] = {};
-
 	const files = [
 		"objects/date",
 		"objects/error",
-		"objects/errors",
-		"objects/promise",
-		"objects/url-params",
-
 		"singletons/query",
-		"classes/config",
-		"singletons/utils",
-		"classes/cron",
-		"singletons/cache",
-		"singletons/cooldown-manager",
-		"singletons/logger",
-		"singletons/system-log",
-		"singletons/vlc-connector",
-		"singletons/twitter",
-		"singletons/internal-request",
-		"singletons/local-request",
-		"singletons/runtime",
-		"singletons/sandbox",
-
-		"classes/got",
-		"singletons/pastebin",
-
-		"classes/platform",
-		"classes/filter",
-		"classes/command",
-		"classes/channel",
-		"classes/chat-module",
-		"classes/user",
-		"classes/afk",
-		"classes/banphrase",
-		"classes/reminder"
+		"singletons/utils"
 	];
 
-	const { blacklist, whitelist, skipData = [] } = options;
+	const { blacklist, whitelist } = options;
 
 	console.groupCollapsed("module load performance");
 
@@ -49,27 +19,18 @@ module.exports = (async function (namespace = "sb", options = {}) {
 			continue;
 		}
 
-		const start = process.hrtime.bigint();
 		const [type] = file.split("/");
+		console.time("Module load: " + file);
 		let component = require("./" + file);
 
 		if (type === "objects") {
-			globalThis[namespace][component.name] = component;
+			core[component.name] = component;
 		}
 		else if (type === "singletons") {
-			globalThis[namespace][component.name] = await component.singleton();
-		}
-		else if (type === "classes") {
-			if (skipData.includes(file)) {
-				globalThis[namespace][component.specificName ?? component.name] = component;
-			}
-			else {
-				globalThis[namespace][component.specificName ?? component.name] = await component.initialize();
-			}
+			core[component.name] = await component.singleton();
 		}
 
-		const end = process.hrtime.bigint();
-		console.log(component.name + " loaded in " + Number(end - start) / 1.0e6 + " ms");
+		console.timeEnd("Module load: " + file)
 	}
 
 	console.groupEnd();

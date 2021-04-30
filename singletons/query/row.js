@@ -1,4 +1,4 @@
-/* global sb */
+/* global stolen_sb */
 /**
  * Represents one row of a SQL database table.
  * @type Row
@@ -13,7 +13,7 @@ module.exports = class Row {
 	#valueProxy = new Proxy(this.#values, {
 		get: (target, name) => {
 			if (typeof target[name] === "undefined") {
-				throw new sb.Error({
+				throw new stolen_sb.Error({
 					message: "Getting value: Column " + name + " does not exist"
 				});
 			}
@@ -22,7 +22,7 @@ module.exports = class Row {
 		},
 		set: (target, name, value) => {
 			if (typeof target[name] === "undefined") {
-				throw new sb.Error({
+				throw new stolen_sb.Error({
 					message: "Setting value: Column " + name + " does not exist"
 				});
 			}
@@ -42,7 +42,7 @@ module.exports = class Row {
 	 */
 	constructor (query, database, table) {
 		if (!database || !table) {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "Row: database and table must be provided",
 				args: {
 					db: database,
@@ -77,7 +77,7 @@ module.exports = class Row {
 	 */
 	async load (primaryKey, ignoreError) {
 		if (typeof primaryKey === "undefined") {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "Primary key must be passed to Row.load"
 			});
 		}
@@ -98,7 +98,7 @@ module.exports = class Row {
 				return this;
 			}
 			else {
-				throw new sb.Error({
+				throw new stolen_sb.Error({
 					message: "Row load failed - no such PK",
 					args: {
 						primaryKeyField: this.fieldPK,
@@ -198,7 +198,7 @@ module.exports = class Row {
 			this.#loaded = false;
 		}
 		else {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "In order to delete the row, it must be loaded.",
 				args: this.fullTable
 			});
@@ -247,7 +247,7 @@ module.exports = class Row {
 	get fieldPK () { return this.#primaryKeyField; }
 	get escapedPK () {
 		if (this.PK === null) {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "Row has no PK"
 			});
 		}
@@ -260,7 +260,7 @@ module.exports = class Row {
 			return this.#definition.path;
 		}
 		else {
-			throw new sb.Error({
+			throw new stolen_sb.Error({
 				message: "This row has no definition, yet"
 			});
 		}

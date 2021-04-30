@@ -19,7 +19,7 @@ Table_From_To
 In order to fetch all From's with To's collapsed in each line, use this reference:
 
 ```js
-sb.Query.getRecordset(rs => rs
+stolen_sb.Query.getRecordset(rs => rs
     // It is important to manually select everything required for the reference!
     .select("Table_From.ID AS From_ID")
     .select("Table_From.Name AS From_Name")

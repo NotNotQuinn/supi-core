@@ -29,7 +29,7 @@ module.exports = (function () {
 
 		/**
 		 * Class containing various utility methods that don't fit elsewhere.
-		 * @name sb.Utils
+		 * @name stolen_sb.Utils
 		 * @type Utils()
 		 */
 		constructor () {
