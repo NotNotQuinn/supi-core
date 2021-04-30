@@ -1,4 +1,4 @@
-declare const _exports: {
+declare class Query {
     new (): {
         "__#5@#loggingThreshold": any;
         "__#5@#definitionPromises": Map<any, any>;
@@ -344,7 +344,7 @@ declare const _exports: {
         NUM_FLAG: number;
     };
 };
-export = _exports;
+export = Query;
 export type RecordsetCallback = (rs: any) => any;
 export type TableDefinition = {
     /**
