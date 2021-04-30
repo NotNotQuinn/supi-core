@@ -1,33 +1,11 @@
 {
-  "name": "supi-core",
-  "version": "2.1.0",
-  "description": "Supinic's projects' core modules, created in a global namespace",
+  "name": "supi-core-query",
+  "version": "2.1.0-stripped-for-query",
+  "description": "Supinic's projects' core modules, created in a global namespace - but stipped down to a single module.",
   "main": "index.js",
   "dependencies": {
-    "async-markov": "github:supinic/async-markov",
-    "cheerio": "^1.0.0-rc.5",
-    "chrono-node": "^1.4.6",
-    "cron": "latest",
-    "dice-roll-eval": "github:jprochazk/dice-roll-eval",
-    "duration-parser": "github:supinic/duration-parser",
-    "ffprobe": "^1.1.0",
-    "form-data": "^3.0.0",
-    "got": "^10.7.0",
-    "ioredis": "^4.17.3",
-    "language-iso-codes": "github:supinic/language-iso-codes",
-    "long-timeout": "github:supinic/long-timeout",
-    "mariadb": "^2.5.2",
-    "node-vlc-http": "github:supinic/node-vlc-http",
-    "random-js": "latest",
-    "rss-parser": "^3.10.0",
-    "track-link-parser": "github:supinic/track-link-parser",
-    "transliteration": "^2.2.0",
-    "twitter-lite": "^0.11.0",
-    "vm2": "^3.9.2"
+    "mariadb": "^2.5.2"
   },
-  "author": "Supinic",
-  "license": "AGPL-3.0",
-  "devDependencies": {
-    "mocha": "^8.1.0"
-  }
+  "author": "Supinic - typed & stripped by QuinnDT",
+  "license": "AGPL-3.0"
 }

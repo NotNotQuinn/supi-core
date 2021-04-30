@@ -1,3 +1,4 @@
+// @ts-nocheck
 module.exports = (function () {
 	"use strict";
 	return class Utils extends require("./template.js") {
