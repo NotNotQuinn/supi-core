@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Extended and simpler-to-use version of native Date
  * @memberof stolen_sb

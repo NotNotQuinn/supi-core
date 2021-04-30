@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* global stolen_sb */
 /**
  * Represents one row of a SQL database table.

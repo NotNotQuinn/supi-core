@@ -1,3 +1,4 @@
+// @ts-nocheck
 module.exports = (async function (namespace = "stolen_sb", options = {}) {
 	globalThis[namespace] = {};
 	const files = [
@@ -24,14 +25,16 @@ module.exports = (async function (namespace = "stolen_sb", options = {}) {
 		let component = require("./" + file);
 
 		if (type === "objects") {
-			core[component.name] = component;
+			globalThis[namespace][component.name] = component;
 		}
 		else if (type === "singletons") {
-			core[component.name] = await component.singleton();
+			globalThis[namespace][component.name] = await component.singleton();
 		}
 
 		console.timeEnd("Module load: " + file)
 	}
 
 	console.groupEnd();
+	/** @type {Query} */
+	return globalThis[namespace].Query
 });

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* global stolen_sb */
 module.exports = (function () {
 	"use strict";

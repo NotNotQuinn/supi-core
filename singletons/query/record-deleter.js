@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* global stolen_sb */
 /**
  * Represents the UPDATE sql statement.

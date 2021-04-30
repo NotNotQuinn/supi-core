@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* global stolen_sb */
 /**
  * Represents the result of a SELECT statement with (usually) more than one result row.
