@@ -6,8 +6,8 @@ declare class RecordUpdater {
      * @name {Recordset}
      */
     constructor(query: any);
-    priority(value: any): import("./record-updater");
-    ignoreDuplicates(): import("./record-updater");
+    priority(value: any): RecordUpdater;
+    ignoreDuplicates(): RecordUpdater;
     /**
      * Sets the UPDATE database + table.
      * @param {string} database

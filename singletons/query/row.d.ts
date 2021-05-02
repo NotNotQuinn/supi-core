@@ -7,7 +7,7 @@ declare class Row {
      * @param {string} table
      * @returns {Promise<Row>}
      */
-    constructor(query: any, database: string, table: string);
+    constructor(query: any, database: string, table: string): Promise<Row>;
     /** @type {Query} */
     query: any;
     /**

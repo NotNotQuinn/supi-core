@@ -17,13 +17,13 @@ declare class Recordset {
      * The object will be flattened, and only the field values will be preserved.
      * @param {string} field
      */
-    flat(field: string): import("./recordset");
+    flat(field: string): Recordset;
     /**
      * Sets an option to be used when constructing the SQL query.
      * @param {string} option
      * @param {*} value
      */
-    use(option: string, value: any): import("./recordset");
+    use(option: string, value: any): Recordset;
     /**
      * Sets the LIMIT.
      * @param {number} number
@@ -110,7 +110,7 @@ declare class Recordset {
     /**
      *
      */
-    reference(options?: {}): import("./recordset");
+    reference(options?: {}): Recordset;
     /**
      * Returns Recordset's WHERE condition.
      * @returns {string}
