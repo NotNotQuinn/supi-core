@@ -35,6 +35,6 @@ module.exports = (async function (namespace = "stolen_sb", options = {}) {
 	}
 
 	console.groupEnd();
-	/** @type {Query} */
+	/** @type {sbQuery} */
 	return globalThis[namespace].Query
 });
