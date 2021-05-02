@@ -1,5 +1,5 @@
-export = Date;
-declare class Date extends Date {
+export = sbDate;
+declare class sbDate extends Date {
     /**
      * Pads a number with specified number of zeroes.
      * @private
@@ -10,8 +10,8 @@ declare class Date extends Date {
     private static zf;
     /**
      * Compares two instances for their equality
-     * @param {stolen_sb.Date} from
-     * @param {stolen_sb.Date} to
+     * @param {sbDate} from
+     * @param {sbDate} to
      * @returns {boolean}
      */
     static equals(from: any, to: any): boolean;
@@ -34,23 +34,23 @@ declare class Date extends Date {
     sqlDateTime(): string;
     /**
      * @param {number} offset in minutes
-     * @returns {stolen_sb.Date}
+     * @returns {sbDate}
      */
     setTimezoneOffset(offset: number): any;
     /**
      * Sets the provided time units to zero.
      * @param {...<"h"|"m"|"s"|"ms">} units
-     * @returns {stolen_sb.Date}
+     * @returns {sbDate}
      */
     discardTimeUnits(...units: any[]): any;
     clone(): any;
-    addYears(y: any): import("./date");
-    addMonths(m: any): import("./date");
-    addDays(d: any): import("./date");
-    addHours(h: any): import("./date");
-    addMinutes(m: any): import("./date");
-    addSeconds(s: any): import("./date");
-    addMilliseconds(ms: any): import("./date");
+    addYears(y: any): sbDate;
+    addMonths(m: any): sbDate;
+    addDays(d: any): sbDate;
+    addHours(h: any): sbDate;
+    addMinutes(m: any): sbDate;
+    addSeconds(s: any): sbDate;
+    addMilliseconds(ms: any): sbDate;
     get dayOfTheWeek(): "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
     set milliseconds(arg: number);
     get milliseconds(): number;

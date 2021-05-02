@@ -1,4 +1,8 @@
-import Query from "./singletons/query";
-declare function _exports(namespace?: string, options?: {}): Promise<Query>;
+import sbQuery from "./singletons/query";
+import sbDate from "./objects/date";
+import sbError from "./objects/error";
+declare function _exports(namespace?: string, options?: {}): Promise<sbQuery>;
 export default _exports;
-export type Query = Query;
+export type sbQuery = sbQuery;
+export type sbDate = sbDate;
+export type sbError = sbError;

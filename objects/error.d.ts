@@ -1,12 +1,12 @@
-export = Error;
-declare class Error extends Error {
+export = sbError;
+declare class sbError extends Error {
     /**
      * Custom error object - has arguments provided
      * @param {Object} obj
-     * @param {Error} [error]
+     * @param {sbError} [error]
      */
-    constructor(obj: Object, error?: import("./error") | undefined);
-    parentError: import("./error") | null;
+    constructor(obj: Object, error?: sbErorr | undefined);
+    parentError: sbError | null;
     date: any;
     toString(): any;
 }
