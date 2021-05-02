@@ -1,10 +1,14 @@
+import Recordset from "./recordset";
+import Maria from "mariadb";
+import Row from "./row";
+import Batch from "./batch";
 declare class Query {
     "__#5@#loggingThreshold": any;
     "__#5@#definitionPromises": Map<any, any>;
     activeConnections: Set<any>;
     /** @type {TableDefinition[]} */
     tableDefinitions: TableDefinition[];
-    pool: import("mariadb").Pool;
+    pool: Maria.Pool;
     /**
      * Executes a raw SQL query.
      * @param {...string} args
@@ -45,7 +49,7 @@ declare class Query {
      * @param {string} table Name of the table
      * @returns {Promise<Row>}
      */
-    getRow(database: string, table: string): Promise<import("./row.js")>;
+    getRow(database: string, table: string): Promise<Row>;
     /**
      * Returns a new Batch instance.
      * @param {string} database Database of the table
@@ -53,7 +57,7 @@ declare class Query {
      * @param {string[]} columns Column names to insert into given table
      * @returns {Promise<Batch>}
      */
-    getBatch(database: string, table: string, columns: string[]): Promise<import("./batch.js")>;
+    getBatch(database: string, table: string, columns: string[]): Promise<Batch>;
     isRecordset(input: any): boolean;
     isRecordDeleter(input: any): boolean;
     isRecordUpdater(input: any): boolean;
@@ -81,13 +85,13 @@ declare class Query {
      * @params {Function} options.callback Callback that gets passed into the RecordUpdater instances
      * @returns {Promise<void>}
      */
-    batchUpdate(data: Object[], options?: Object): Promise<void>;
+    batchUpdate(data: Object[], options?: {[x:string]: any, callback?: Function}): Promise<void>;
     /**
      * Creates a condition string, based on the same syntax Recordset uses
      * @param {Function} callback
      * @returns {string}
      */
-    getCondition(callback: Function): string;
+    getCondition(callback: RecordsetCallback): string;
     /**
      * Invalidates a specific table definition.
      * The next time it is accessed, it will be refreshed.
@@ -163,7 +167,7 @@ declare class Query {
      * @returns {Query}
      */
     singleton(): Query;
-    readonly sqlKeywords: string[];
+    readonly sqlKeywords: [ "SUM", "COUNT", "AVG" ];
     readonly flagMask: {
         NOT_NULL: number;
         PRIMARY_KEY: number;
@@ -183,7 +187,7 @@ declare class Query {
     };
 };
 export = Query;
-export type RecordsetCallback = (rs: any) => any;
+export type RecordsetCallback = (rs: Recordset) => Recordset;
 export type TableDefinition = {
     /**
      * Database of table
@@ -210,7 +214,7 @@ export type ColumnDefinition = {
     /**
      * Column type
      */
-    type: string;
+    type: CollumnType;
     /**
      * If true, column can be set to null
      */
@@ -235,3 +239,5 @@ export type WhereHavingParams = {
     raw?: string | undefined;
 };
 export type FormatSymbol = "%b" | "%d" | "%dt" | "%p" | "%n" | "%s" | "%t" | "%like" | "%*like" | "%like*" | "%*like*";
+
+export type CollumnType = Maria.Types;
