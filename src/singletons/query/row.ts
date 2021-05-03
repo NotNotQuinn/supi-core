@@ -1,19 +1,26 @@
-// @ts-nocheck
-/* global stolen_sb */
+import { TableDefinition } from './index'
+import Query from "./index"
 /**
  * Represents one row of a SQL database table.
- * @type Row
  */
-module.exports = class Row {
-	/** @type {TableDefinition} */
-	#definition = null;
-	#primaryKey = null;
-	#primaryKeyField = null;
-	#values = {};
-	#originalValues = {};
+class Row {
+	query: Query;
+	/** 
+	 * This promise resolves when the Row has loaded.
+	 * @type {Promise<any>} 
+	 */
+	Ready: Promise<void> = new Promise(() => {});
+	#definition: TableDefinition = null;
+	#primaryKey: null | number = null;
+	/** @type {typeof Row.#definition.columns} */
+	#primaryKeyField: any = null;
+	#values: any = {};
+	#originalValues: any = {};
 	#valueProxy = new Proxy(this.#values, {
-		get: (target, name) => {
+		/** @param {string} name */
+		get: (target, name: string) => {
 			if (typeof target[name] === "undefined") {
+				// @ts-ignore
 				throw new stolen_sb.Error({
 					message: "Getting value: Column " + name + " does not exist"
 				});
@@ -21,8 +28,10 @@ module.exports = class Row {
 
 			return target[name];
 		},
-		set: (target, name, value) => {
+		/** @param {string} name */
+		set: (target, name: string, value) => {
 			if (typeof target[name] === "undefined") {
+				// @ts-ignore
 				throw new stolen_sb.Error({
 					message: "Setting value: Column " + name + " does not exist"
 				});
@@ -39,10 +48,10 @@ module.exports = class Row {
 	 * @param {Query} query
 	 * @param {string} database
 	 * @param {string} table
-	 * @returns {Promise<Row>}
 	 */
-	constructor (query, database, table) {
+	constructor (query: Query, database: string, table: string) {
 		if (!database || !table) {
+				// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "Row: database and table must be provided",
 				args: {
@@ -55,9 +64,9 @@ module.exports = class Row {
 		/** @type {Query} */
 		this.query = query;
 
-		return (async () => {
-			this.#definition = await this.query.getDefinition(database, table);
-			for (const column of this.#definition.columns) {
+		this.Ready = (async () => {
+			this.#definition = await query.getDefinition(database, table);
+			for (const column of this.#definition?.columns ?? []) {
 				this.#values[column.name] = Symbol.for("unset");
 				this.#originalValues[column.name] = Symbol.for("unset");
 
@@ -65,8 +74,6 @@ module.exports = class Row {
 					this.#primaryKeyField = column;
 				}
 			}
-
-			return this;
 		})();
 	}
 
@@ -76,8 +83,9 @@ module.exports = class Row {
 	 * @param {boolean} ignoreError
 	 * @returns {Promise<Row>}
 	 */
-	async load (primaryKey, ignoreError) {
+	async load (primaryKey: number, ignoreError: boolean = false): Promise<Row> {
 		if (typeof primaryKey === "undefined") {
+				// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "Primary key must be passed to Row.load"
 			});
@@ -89,7 +97,7 @@ module.exports = class Row {
 		this.#primaryKey = primaryKey;
 
 		const data = await this.query.raw([
-			"SELECT * FROM " + this.#definition.escapedPath,
+			"SELECT * FROM " + this.#definition!.escapedPath,
 			"WHERE " + this.query.escapeIdentifier(this.fieldPK.name) + " = " + this.escapedPK
 		].join(" "));
 
@@ -99,6 +107,7 @@ module.exports = class Row {
 				return this;
 			}
 			else {
+				// @ts-ignore
 				throw new stolen_sb.Error({
 					message: "Row load failed - no such PK",
 					args: {
@@ -110,7 +119,7 @@ module.exports = class Row {
 			}
 		}
 
-		for (const column of this.#definition.columns) {
+		for (const column of this.#definition!.columns) {
 			const value = this.query.convertToJS(data[0][column.name], column.type);
 			this.#values[column.name] = value;
 			this.#originalValues[column.name] = value;
@@ -128,12 +137,12 @@ module.exports = class Row {
 	 * @param {boolean} [options.ignore] If true, INSERT will be executed as INSERT IGNORE (ignores duplicate keys)
 	 * @returns {Promise<Object>}
 	 */
-	async save (options = {}) {
+	async save (options: { ignore?: boolean } = {}): Promise<object|false> {
 		let outputData = null;
 
 		if (this.PK !== null && this.#loaded) { // UPDATE
 			let setColumns = [];
-			for (const column of this.#definition.columns) {
+			for (const column of this.#definition!.columns) {
 				if (this.#originalValues[column.name] === this.#values[column.name]) continue;
 
 				setColumns.push(
@@ -148,7 +157,7 @@ module.exports = class Row {
 			}
 
 			outputData = await this.query.raw([
-				"UPDATE " + this.#definition.escapedPath,
+				"UPDATE " + this.#definition!.escapedPath,
 				"SET " + setColumns.join(", "),
 				"WHERE " + this.query.escapeIdentifier(this.fieldPK.name) + " = " + this.escapedPK
 			].join(" "));
@@ -156,7 +165,7 @@ module.exports = class Row {
 		else { // INSERT
 			let columns = [];
 			let values = [];
-			for (const column of this.#definition.columns) {
+			for (const column of this.#definition!.columns) {
 				if (this.#values[column.name] === Symbol.for("unset")) continue;
 
 				columns.push(this.query.escapeIdentifier(column.name));
@@ -165,18 +174,18 @@ module.exports = class Row {
 
 			const ignore = (options.ignore === true ? "IGNORE " : "");
 			outputData = await this.query.send([
-				"INSERT " + ignore + "INTO " + this.#definition.escapedPath,
+				"INSERT " + ignore + "INTO " + this.#definition!.escapedPath,
 				"(" + columns.join(",") + ")",
 				"VALUES (" + values.join(",") + ")"
 			].join(" "));
 
 			if (outputData.insertId !== 0) {
 				this.#primaryKey = outputData.insertId;
-				await this.load(this.#primaryKey);
+				await this.load(this.#primaryKey!);
 			}
 			else if (columns.indexOf(this.fieldPK.name) !== -1) {
 				this.#primaryKey = this.#values[this.fieldPK.name];
-				await this.load(this.#primaryKey);
+				await this.load(this.#primaryKey!);
 			}
 			else {
 				this.#primaryKey = null;
@@ -190,18 +199,19 @@ module.exports = class Row {
 	 * Performs a DELETE operation on the currently loaded row.
 	 * @returns {Promise<void>}
 	 */
-	async delete () {
+	async delete (): Promise<void> {
 		if (this.PK !== null) {
 			await this.query.send([
-				"DELETE FROM " + this.#definition.escapedPath,
+				"DELETE FROM " + this.#definition!.escapedPath,
 				"WHERE " + this.query.escapeIdentifier(this.fieldPK.name) + " = " + this.escapedPK
 			].join(" "));
 			this.#loaded = false;
 		}
 		else {
+				// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "In order to delete the row, it must be loaded.",
-				args: this.fullTable
+				args: this.#definition
 			});
 		}
 	}
@@ -213,7 +223,7 @@ module.exports = class Row {
 	reset () {
 		this.#loaded = false;
 		this.#primaryKey = null;
-		for (const column of this.#definition.columns) {
+		for (const column of this.#definition!.columns) {
 			this.#values[column.name] = Symbol.for("unset");
 			this.#originalValues[column.name] = Symbol.for("unset");
 		}
@@ -224,7 +234,7 @@ module.exports = class Row {
 	 * @param {Object} data
 	 * @returns {Row}
 	 */
-	setValues (data) {
+	setValues (data: object): Row {
 		for (const [key, value] of Object.entries(data)) {
 			this.values[key] = value;
 		}
@@ -237,7 +247,7 @@ module.exports = class Row {
 	 * @param {string} property
 	 * @returns {boolean}
 	 */
-	hasProperty (property) {
+	hasProperty (property: string): boolean {
 		return (typeof this.#values[property] !== "undefined");
 	}
 
@@ -248,6 +258,7 @@ module.exports = class Row {
 	get fieldPK () { return this.#primaryKeyField; }
 	get escapedPK () {
 		if (this.PK === null) {
+				// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "Row has no PK"
 			});
@@ -261,6 +272,7 @@ module.exports = class Row {
 			return this.#definition.path;
 		}
 		else {
+				// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "This row has no definition, yet"
 			});
@@ -268,3 +280,5 @@ module.exports = class Row {
 	}
 	get loaded () { return this.#loaded; }
 };
+
+module.exports = Row;
