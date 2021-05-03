@@ -150,21 +150,18 @@ class Alias extends require("./template.js") {
 
         let data = await sb.Query.getRecordset(rs=>{
             let UserCondition = UserID === null
-                ? ["User_Alias = NULL"]
+                ? ["User_Alias IS NULL"]
                 : ["User_Alias = %n", UserID];
             let ChannelCondition = Channel === null
-                ? ["Channel = NULL"]
+                ? ["Channel IS NULL"]
                 : ["Channel = %n", Channel];
-            let NameCondition = Name === null
-                ? ["Name = NULL"]
-                : ["Name = %s", Name];
 
             return rs
                 .select("*")
                 .from("data", "aliased_command")
                 .where(...UserCondition)
                 .where(...ChannelCondition)
-                .where(...NameCondition)
+                .where("Name = %s", Name)
                 .limit(1)
                 .single()
         });
