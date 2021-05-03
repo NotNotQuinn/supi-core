@@ -1,5 +1,5 @@
 /** @interface */
-module.exports = class TemplateSingletonModule {
+export default class TemplateSingletonModule {
 	/**
 	 * Cleans up the module.
 	 * All sub-classes must implement this method.
