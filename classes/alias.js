@@ -1,3 +1,4 @@
+/* global sb */
 class Alias extends require("./template.js") {
     //<editor-fold defaultstate="collapsed" desc="=== INSTANCE PROPERTIES ===">
 
@@ -135,9 +136,11 @@ class Alias extends require("./template.js") {
         if (obj instanceof Alias) {
             return obj;
         }
-        const { User = null, Channel = null, Name = null } = obj;
+        let { User = null, Channel = null, Name = null } = obj;
         let UserID = null;
-        if (User !== null) UserID = (await sb.User.get(User)).ID;
+        if (User !== null) {
+            UserID = (await sb.User.get(User)).ID
+        };
 
         let data = await sb.Query.getRecordset(rs=>rs
             .select("*")
@@ -216,6 +219,13 @@ class Alias extends require("./template.js") {
             success: true,
             resultArguments
         };
+    }
+
+    /**
+     * 
+     */
+    static async loadData() {
+        // No data...
     }
 }
 module.exports = Alias;
