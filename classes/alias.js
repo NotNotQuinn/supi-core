@@ -113,6 +113,7 @@ class Alias extends require("./template.js") {
      * @param {number|null} data.User_Alias
      */
 	constructor (data) {
+        super();
         this.Args = data.Args.split(" ");
         this.Channel = data.Channel;
         this.Copy_Of = data.Copy_Of;
