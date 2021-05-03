@@ -139,7 +139,7 @@ class Alias extends require("./template.js") {
         let { User = null, Channel = null, Name = null } = obj;
         let UserID = null;
         if (User !== null) {
-            let User = await sb.User.get(User);
+            User = await sb.User.get(User);
             UserID = User.ID
         };
 
