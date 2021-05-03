@@ -1,43 +1,44 @@
-// @ts-nocheck
+import Query from './index';
+import { WhereHavingParams, FormatSymbol, TableDefinition, ColumnDefinition } from './index'
 /* global stolen_sb */
 /**
  * Represents the result of a SELECT statement with (usually) more than one result row.
  */
 
-const ROW_COLLAPSED = Symbol("row-collapsed");
-module.exports = class Recordset {
-	#query = null;
-	#fetchSingle = false;
-	#raw = null;
-	#options = {};
-	#flat = null;
+const ROW_COLLAPSED = Symbol.for("row-collapsed");
+class Recordset {
+	#query: Query|null = null;
+	#fetchSingle: boolean = false;
+	#raw: string[]|null = null;
+	#options: any = {};
+	#flat: string|null = null;
 
-	#select = [];
-	#from = { database: null, table: null };
-	#where = [];
-	#having = [];
-	#orderBy = [];
-	#groupBy = [];
-	#join = [];
-	#limit = null;
-	#offset = null;
-	#reference = [];
+	#select: string[] = [];
+	#from: { database: string|null, table: string|null } = { database: null, table: null };
+	#where: string[] = [];
+	#having: string[] = [];
+	#orderBy: string[] = [];
+	#groupBy: string[] = [];
+	#join: string[] = [];
+	#limit: number|null = null;
+	#offset: number|null = null;
+	#reference: any[] = [];
 
 	/**
 	 * Creates a new Recordset instance.
 	 * @param {Query} query
 	 * @name {Recordset}
 	 */
-	constructor (query) {
+	constructor (query: Query) {
 		/** @type {Query} */
-		this.#query = query;
+		this.#query! = query;
 	}
 
 	/**
 	 * Sets a flag so the recordset will return the first result directly instead of returning an array.
 	 * @returns {Recordset}
 	 */
-	single () {
+	single (): Recordset {
 		this.#fetchSingle = true;
 		return this;
 	}
@@ -47,7 +48,7 @@ module.exports = class Recordset {
 	 * The object will be flattened, and only the field values will be preserved.
 	 * @param {string} field
 	 */
-	flat (field) {
+	flat (field: string) {
 		this.#flat = field;
 		return this;
 	}
@@ -57,7 +58,7 @@ module.exports = class Recordset {
 	 * @param {string} option
 	 * @param {*} value
 	 */
-	use (option, value) {
+	use (option: string, value: any) {
 		this.#options[option] = value;
 		return this;
 	}
@@ -68,10 +69,11 @@ module.exports = class Recordset {
 	 * @returns {Recordset}
 	 * @throws {stolen_sb.Error} If number is not a finite number
 	 */
-	limit (number) {
+	limit (number: number): Recordset {
 		this.#limit = Number(number);
 
 		if (!Number.isFinite(this.#limit)) {
+			// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "Limit must be a finite number",
 				args: number
@@ -87,10 +89,11 @@ module.exports = class Recordset {
 	 * @returns {Recordset}
 	 * @throws {stolen_sb.Error} If number is not a finite number
 	 */
-	offset (number) {
+	offset (number: number): Recordset {
 		this.#offset = Number(number);
 
 		if (!Number.isFinite(this.#offset)) {
+			// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "Offset must be a finite number",
 				args: number
@@ -105,7 +108,7 @@ module.exports = class Recordset {
 	 * @param {string[]} args
 	 * @returns {Recordset}
 	 */
-	select (...args) {
+	select (...args: string[]): Recordset {
 		this.#select = this.#select.concat(args);
 		return this;
 	}
@@ -116,8 +119,9 @@ module.exports = class Recordset {
 	 * @param {string} table
 	 * @returns {Recordset}
 	 */
-	from (database, table) {
+	from (database: string, table: string): Recordset {
 		if (!database || !table) {
+			// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "Recordset: database and table must be provided",
 				args: {
@@ -137,7 +141,7 @@ module.exports = class Recordset {
 	 * @param {string[]} args
 	 * @returns {Recordset}
 	 */
-	groupBy (...args) {
+	groupBy (...args: string[]): Recordset {
 		this.#groupBy = this.#groupBy.concat(args);
 		return this;
 	}
@@ -147,7 +151,7 @@ module.exports = class Recordset {
 	 * @param {string[]} args
 	 * @returns {Recordset}
 	 */
-	orderBy (...args) {
+	orderBy (...args: string[]): Recordset {
 		this.#orderBy = this.#orderBy.concat(args);
 		return this;
 	}
@@ -159,7 +163,7 @@ module.exports = class Recordset {
 	 * @param {Array.<string|FormatSymbol|WhereHavingParams>} args
 	 * @returns {Recordset}
 	 */
-	where (...args) {
+	where (...args: Array<string | FormatSymbol | WhereHavingParams>): Recordset {
 		return this.conditionWrapper("where", ...args);
 	}
 
@@ -170,7 +174,7 @@ module.exports = class Recordset {
 	 * @param {Array} args
 	 * @returns {Recordset}
 	 */
-	having (...args) {
+	having (...args: Array<any>): Recordset {
 		return this.conditionWrapper("having", ...args);
 	}
 
@@ -181,8 +185,11 @@ module.exports = class Recordset {
 	 * @param {Array} args
 	 * @returns {Recordset}
 	 */
-	conditionWrapper (type, ...args) {
-		let options = {};
+	conditionWrapper (type: "where" | "having", ...args: Array<any>): Recordset {
+		let options: {
+			condition?: boolean;
+			raw?: string;
+		} = {};
 		if (args[0] && args[0].constructor === Object) {
 			options = args[0];
 			args.shift();
@@ -203,8 +210,8 @@ module.exports = class Recordset {
 		}
 
 		let index = 0;
-		format = format.replace(this.#query.formatSymbolRegex, (fullMatch, param) => (
-			this.#query.parseFormatSymbol(param, args[index++])
+		format = format.replace(this.#query!.formatSymbolRegex, (fullMatch, param) => (
+			this.#query!.parseFormatSymbol(param, args[index++])
 		));
 
 		if (type === "where") {
@@ -214,6 +221,7 @@ module.exports = class Recordset {
 			this.#having = this.#having.concat(format);
 		}
 		else {
+			// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "Recordset: Unrecognized condition wrapper option",
 				args: arguments
@@ -232,7 +240,7 @@ module.exports = class Recordset {
 	 * @param {string} left
 	 * @returns {Recordset}
 	 */
-	join (database, target, customField, left = "") {
+	join (database: {[x:string]:undefined|string }, target?: string | { raw?: string }, customField?: string, left: string = ""): Recordset {
 		if (typeof target === "string") {
 			const dot = (database) ? (database + ".`" + target + "`") : ("`" + target + "`");
 			this.#join.push(left + "JOIN " + dot + " ON `" + this.#from.table + "`.`" + (customField || target) + "` = " + dot + ".ID");
@@ -252,6 +260,7 @@ module.exports = class Recordset {
 			} = database;
 
 			if (!toTable || !toDatabase) {
+			// @ts-ignore
 				throw new stolen_sb.Error({
 					message: "Missing compulsory arguments for join",
 					args: target
@@ -287,22 +296,22 @@ module.exports = class Recordset {
 	/**
 	 * Sets a table to LEFT JOIN.
 	 * @todo - this needs a better implementation
-	 * @param {string|Object} target If string, represents the name of the table to join.
-	 * @param {string} [target.raw] If target is Object, and raw is specified, parsing is skipped and the string is used directly.
+	 * @param {string|{raw?: string}} target If string, represents the name of the table to join.
+	 * If target is Object, and raw is specified, parsing is skipped and the string is used directly.
 	 * @param {string} database Database of joined table
 	 * @param {string} [customField] If set, attempts to join the table via specific field
 	 * @returns {Recordset}
 	 */
-	leftJoin (database, target, customField) {
+	leftJoin (database: { [x:string]: undefined|string }, target?: string | Object | { raw?: string; }, customField?: string): Recordset {
 		return this.join(database, target, customField, "LEFT ");
 	}
 
 	/**
 	 * For more info and detailed usage, check `./reference.md`
 	 */
-	reference (options = {}) {
+	reference (options : {[x:string]:undefined|string; } & { fields?: string[] } = {}) {
 		const {
-			sourceDatabase = this.#from.database,
+			sourceDatabase = this.#from.database as string,
 			sourceTable = this.#from.table,
 			sourceField = "ID",
 
@@ -330,22 +339,22 @@ module.exports = class Recordset {
 		if (referenceTable && targetTable) {
 			this[joinType]({
 				fromDatabase: sourceDatabase,
-				fromTable: sourceTable,
+				fromTable: sourceTable ?? undefined,
 				fromField: sourceField,
-				toDatabase: referenceDatabase,
+				toDatabase: referenceDatabase ?? undefined,
 				toTable: referenceTable,
-				toField: referenceFieldSource,
+				toField: referenceFieldSource ?? undefined,
 				condition: referenceCondition
 			});
 
 			this[joinType]({
-				fromDatabase: referenceDatabase,
+				fromDatabase: referenceDatabase ?? undefined,
 				fromTable: referenceTable,
 				fromField: referenceFieldTarget,
-				toDatabase: targetDatabase,
+				toDatabase: targetDatabase ?? undefined,
 				toTable: targetTable,
 				toField: targetField,
-				alias: targetAlias,
+				alias: targetAlias ?? undefined,
 				condition: targetCondition
 			});
 
@@ -358,12 +367,12 @@ module.exports = class Recordset {
 		else if (targetTable && !referenceTable) {
 			this[joinType]({
 				fromDatabase: sourceDatabase,
-				fromTable: sourceTable,
+				fromTable: sourceTable ?? undefined,
 				fromField: sourceField,
-				toDatabase: targetDatabase,
+				toDatabase: targetDatabase ?? undefined,
 				toTable: targetTable,
 				toField: targetField,
-				alias: targetAlias,
+				alias: targetAlias ?? undefined,
 				condition
 			});
 
@@ -374,7 +383,8 @@ module.exports = class Recordset {
 			});
 		}
 		else {
-			throw new sb.Error({
+			// @ts-ignore
+			throw new stolen_sb.Error({
 				message: "Too many missing table specifications"
 			});
 		}
@@ -386,7 +396,7 @@ module.exports = class Recordset {
 	 * Returns Recordset's WHERE condition.
 	 * @returns {string}
 	 */
-	toCondition () {
+	toCondition (): string {
 		if (this.#where.length !== 0)  {
 			return "(" + this.#where.join(") AND (") + ")";
 		}
@@ -400,19 +410,20 @@ module.exports = class Recordset {
 	 * @returns {string[]}
 	 * @throws {stolen_sb.Error} If no SELECT statement has been provided. The entire Recordset makes no sense should this happen
 	 */
-	toSQL () {
+	toSQL (): string[] {
 		if (this.#raw) {
 			return this.#raw;
 		}
 
 		if (this.#select.length === 0) {
+			// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "No SELECT in Recordset - invalid definition"
 			});
 		}
 
 		let sql = [];
-		sql.push("SELECT " + this.#select.map(select => this.#query.escapeIdentifier(select)).join(", "));
+		sql.push("SELECT " + this.#select.map(select => this.#query!.escapeIdentifier(select)).join(", "));
 		(this.#from) && sql.push("FROM `" + this.#from.database + "`.`" + this.#from.table + "`");
 		(this.#join.length !== 0) && sql.push(this.#join.join(" "));
 		(this.#where.length !== 0) && sql.push("WHERE (" + this.#where.join(") AND (") + ")");
@@ -429,19 +440,19 @@ module.exports = class Recordset {
 	 * Executes the SQL query and converts received values to their JS representation.
 	 * @returns {Promise<Array>}
 	 */
-	async fetch () {
+	async fetch (): Promise<Array<any>> {
 		const sql = this.toSQL();
 		let rows = null;
 
 		try {
-			rows = await this.#query.raw(...sql);
+			rows = await this.#query!.raw(...sql);
 		}
 		catch (err) {
 			console.error(err);
 			throw err;
 		}
 
-		const definition = {};
+		const definition: { [x:string]: any } = {};
 		for (const column of rows.meta) {
 			definition[column.name()] = column.type;
 		}
@@ -449,6 +460,7 @@ module.exports = class Recordset {
 		let result = [];
 		for (const row of rows) {
 			if (this.#flat && typeof row[this.#flat] === "undefined") {
+			// @ts-ignore
 				throw new stolen_sb.Error({
 					message: `Column ${this.#flat} is not included in the result`,
 					args: {
@@ -464,7 +476,7 @@ module.exports = class Recordset {
 					type = "LONG";
 				}
 
-				row[name] = this.#query.convertToJS(value, type);
+				row[name] = this.#query!.convertToJS(value, type);
 			}
 
 			if (this.#flat) {
@@ -491,7 +503,7 @@ module.exports = class Recordset {
 			: result;
 	}
 
-	static collapseReferencedData (data, options) {
+	static collapseReferencedData (data: {[x:number]: any; [x:string]: any}[], options: { collapseOn: any; target: string; columns: string[]}) {
 		const keyMap = new Map();
 		const { collapseOn: collapser, target, columns } = options;
 		const regex = new RegExp("^" + target + "_");
@@ -502,10 +514,11 @@ module.exports = class Recordset {
 				keyMap.set(row[collapser], []);
 			}
 			else {
+				// @ts-ignore
 				data[i][ROW_COLLAPSED] = true;
 			}
 
-			const copiedProperties = {};
+			const copiedProperties: { [x:string]: string } = {};
 			for (const column of columns) {
 				copiedProperties[column.replace(regex, "")] = row[column];
 				delete row[column];
@@ -538,12 +551,4 @@ module.exports = class Recordset {
 	}
 };
 
-/**
- * @typedef {Object} WhereHavingParams
- * @property {boolean} [condition] If false, WHERE/HAVING will not be executed
- * @property {string} [raw] If present, WHERE/HAVING will not be parsed, and instead will directly use this string
- */
-
-/**
- * @typedef {"%b"|"%d"|"%dt"|"%p"|"%n"|"%s"|"%t"|"%like"|"%*like"|"%like*"|"%*like*"} FormatSymbol
- */
+export = Recordset

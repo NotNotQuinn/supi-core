@@ -129,17 +129,3 @@ declare class Recordset {
     fetch(): Promise<any[]>;
     #private;
 }
-declare namespace Recordset {
-    export { WhereHavingParams, FormatSymbol };
-}
-type FormatSymbol = "%b" | "%d" | "%dt" | "%p" | "%n" | "%s" | "%t" | "%like" | "%*like" | "%like*" | "%*like*";
-type WhereHavingParams = {
-    /**
-     * If false, WHERE/HAVING will not be executed
-     */
-    condition?: boolean | undefined;
-    /**
-     * If present, WHERE/HAVING will not be parsed, and instead will directly use this string
-     */
-    raw?: string | undefined;
-};
