@@ -197,6 +197,10 @@ export type TableDefinition = {
      */
     name: string;
     /**
+     * Escaped path to data.
+     */
+    escapedPath: string;
+    /**
      * {@link TableDefinition#database} . {@link TableDefinition#name}
      */
     path: string;
@@ -204,7 +208,7 @@ export type TableDefinition = {
      * Column definition
      */
     columns: ColumnDefinition[];
-};
+} | null;
 export type ColumnDefinition = {
     /**
      * Column name
