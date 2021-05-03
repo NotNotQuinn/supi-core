@@ -132,7 +132,7 @@ class Alias extends require("./template.js") {
      * @param {number|null} obj.Channel
      * @param {string|null} obj.Name
      */
-	static get (obj) {
+	static async get (obj) {
         if (obj instanceof Alias) {
             return obj;
         }
