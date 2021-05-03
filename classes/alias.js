@@ -128,30 +128,45 @@ class Alias extends require("./template.js") {
     /**
      * 
      * @param {Object|Alias} obj Object holding info to identify the alias you want to get.
-     * @param {sb.User|null} obj.User
-     * @param {number|null} obj.Channel
-     * @param {string|null} obj.Name
+     * @param {string} obj.Name
+     * @param {sb.User|null} [obj.User]
+     * @param {number|null} [obj.Channel]
      */
 	static async get (obj) {
         if (obj instanceof Alias) {
             return obj;
         }
-        let { User = null, Channel = null, Name = null } = obj;
+        let { User = null, Channel = null, Name } = obj;
+        if (Name == undefined) throw new sb.Error({
+            message: "Name must be provided when getting an alias.",
+            requested_data: obj
+        })
         let UserID = null;
         if (User !== null) {
             User = await sb.User.get(User);
             UserID = User.ID
         };
 
-        let data = await sb.Query.getRecordset(rs=>rs
-            .select("*")
-            .from("data", "aliased_command")
-            .where("User_Alias = %n", UserID)
-            .where("Channel = %n", Channel)
-            .where("Name = %s", Name)
-            .limit(1)
-            .single()
-        );
+        let data = await sb.Query.getRecordset(rs=>{
+            let UserCondition = UserID === null
+                ? ["User_Alias = NULL"]
+                : ["User_Alias = %n", UserID];
+            let ChannelCondition = Channel === null
+                ? ["Channel = NULL"]
+                : ["Channel = %n", Channel];
+            let NameCondition = Name === null
+                ? ["Name = NULL"]
+                : ["Name = %s", Name];
+
+            return rs
+                .select("*")
+                .from("data", "aliased_command")
+                .where(...UserCondition)
+                .where(...ChannelCondition)
+                .where(...NameCondition)
+                .limit(1)
+                .single()
+        });
 
         return new Alias(data);
 	}
