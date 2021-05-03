@@ -97,8 +97,31 @@ class Alias extends require("./template.js") {
         response: "Your alias should only contain letters, numbers and be 2-30 characters long."
     }
 
+    /**
+     * Creates a new Alias object from data.
+     * @param {Object} data
+     * @param {string} data.Args
+     * @param {number|null} data.Channel
+     * @param {number|null} data.Copy_Of
+     * @param {sb.Date} data.Created
+     * @param {string|null} data.Description
+     * @param {number} data.ID
+     * @param {string} data.Invocation
+     * @param {sb.Date|null} data.Last_Edit
+     * @param {string} data.Name
+     * @param {number|null} data.User_Alias
+     */
 	constructor (data) {
+        this.Args = data.Args.split(" ");
+        this.Channel = data.Channel;
+        this.Copy_Of = data.Copy_Of;
+        this.Created = data.Created;
+        this.Description = data.Description;
         this.ID = data.ID;
+        this.Invocation = data.Invocation;
+        this.Last_Edit = data.Last_Edit;
+        this.Name = data.Name;
+        this.User_Alias = data.User_Alias;
 	}
 
     /**
