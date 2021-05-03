@@ -33,7 +33,8 @@ module.exports = (async function (namespace = "sb", options = {}) {
 		"singletons/logger",
 		"classes/afk",
 		"classes/banphrase",
-		"classes/reminder"
+		"classes/reminder",
+		"classes/alias"
 	];
 
 	const { blacklist, whitelist, skipData = [] } = options;
