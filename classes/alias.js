@@ -127,15 +127,29 @@ class Alias extends require("./template.js") {
     /**
      * 
      * @param {Object|Alias} obj Object holding info to identify the alias you want to get.
-     * @param {sb.User} obj.User 
-     * @param {Object} obj.Channel 
-     * @param {Object} obj.Name
+     * @param {sb.User|null} obj.User
+     * @param {number|null} obj.Channel
+     * @param {string|null} obj.Name
      */
 	static get (obj) {
         if (obj instanceof Alias) {
             return obj;
         }
-        const { user = null, channel = null, name = null } = obj;
+        const { User = null, Channel = null, Name = null } = obj;
+        let UserID = null;
+        if (User !== null) UserID = (await sb.User.get(User)).ID;
+
+        let data = await sb.Query.getRecordset(rs=>rs
+            .select("*")
+            .from("data", "aliased_command")
+            .where("User_Alias = %n", UserID)
+            .where("Channel = %n", Channel)
+            .where("Name = %s", Name)
+            .limit(1)
+            .single()
+        );
+
+        return new Alias(data);
 	}
 
 	/**
