@@ -139,7 +139,8 @@ class Alias extends require("./template.js") {
         let { User = null, Channel = null, Name = null } = obj;
         let UserID = null;
         if (User !== null) {
-            UserID = (await sb.User.get(User)).ID
+            let User = await sb.User.get(User);
+            UserID = User.ID
         };
 
         let data = await sb.Query.getRecordset(rs=>rs
@@ -159,7 +160,7 @@ class Alias extends require("./template.js") {
 	 * Checks if an alias exists, and executes it if needed.
      * @returns {AliasExecution}
 	 */
-	static async checkAndExecute (identifier, argumentArray, channelData, userData, options = {}) {
+	static async checkAndExecute (context, identifier, argumentArray, options = {}) {
 
 	}
 
