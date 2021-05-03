@@ -63,8 +63,6 @@ module.exports = (function () {
 					host: process.env.MARIA_HOST,
 					port: process.env.MARIA_PORT || 3306,
 					password: process.env.MARIA_PASSWORD,
-					host: process.env.MARIA_HOST,
-					port: process.env.MARIA_PORT ?? 3306,
 					connectionLimit: process.env.MARIA_CONNECTION_LIMIT ?? 25
 				});
 			}

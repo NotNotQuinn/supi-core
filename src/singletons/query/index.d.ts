@@ -27,10 +27,10 @@ declare class Query {
     getTransaction(): Promise<any>;
     /**
      * Creates a new Recordset instance.
-     * @param {RecordsetCallback} callback
+     * @param {(rs: Recordset) => Recordset} callback
      * @returns {Promise<Array>}
      */
-    getRecordset(callback: RecordsetCallback): Promise<any[]>;
+    getRecordset(callback: (rs: Recordset) => Recordset): Promise<any[]>;
     /**
      * Creates a new RecordDeleter instance.
      * @param callback
@@ -39,10 +39,10 @@ declare class Query {
     getRecordDeleter(callback: any): Promise<any>;
     /**
      * Creates a new RecordUpdater instance.
-     * @param {RecordsetCallback} callback
+     * @param {(rs: Recordset) => Recordset} callback
      * @returns {Promise<Array>}
      */
-    getRecordUpdater(callback: RecordsetCallback): Promise<any[]>;
+    getRecordUpdater(callback: (rs: Recordset) => Recordset): Promise<Object[]|Object>;
     /**
      * Creates a new Row instance.
      * @param {string} database Database of the table
@@ -91,7 +91,7 @@ declare class Query {
      * @param {Function} callback
      * @returns {string}
      */
-    getCondition(callback: RecordsetCallback): string;
+    getCondition(callback: (rs: Recordset) => Recordset): string;
     /**
      * Invalidates a specific table definition.
      * The next time it is accessed, it will be refreshed.
@@ -187,7 +187,6 @@ declare class Query {
     };
 };
 export = Query;
-export type RecordsetCallback = (rs: Recordset) => Recordset;
 export type TableDefinition = {
     /**
      * Database of table
