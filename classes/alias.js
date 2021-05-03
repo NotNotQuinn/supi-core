@@ -62,9 +62,9 @@ class Alias extends require("./template.js") {
                 attempted_value: desc
             });
         }
-        else if (desc.length >= Alias.#aliasDepthLimit) {
+        else if (desc.length >= Alias.#descriptionLimit) {
             throw new sb.Error({
-                message: `Length of sb.Alias.Description cannot be > ${Alias.#aliasDepthLimit}.`,
+                message: `Length of sb.Alias.Description cannot be > ${Alias.#descriptionLimit}.`,
                 alias: this
             })
         };
