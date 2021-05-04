@@ -208,7 +208,7 @@ export type TableDefinition = {
      * Column definition
      */
     columns: ColumnDefinition[];
-} | null;
+};
 export type ColumnDefinition = {
     /**
      * Column name
