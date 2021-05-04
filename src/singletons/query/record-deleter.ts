@@ -1,12 +1,14 @@
-// @ts-nocheck
+
+import Query from './index';
+import { FormatSymbol, WhereHavingParams } from './index';
 /* global stolen_sb */
 /**
  * Represents the UPDATE sql statement.
  */
 module.exports = class RecordDeleter {
-	#query = null;
-	#deleteFrom = { database: null, table: null };
-	#where = [];
+	#query: Query|null = null;
+	#deleteFrom: { database: string|null; table: string|null } = { database: null, table: null };
+	#where: string[] = [];
 	#confirmedFullDelete = false;
 
 	/**
@@ -14,16 +16,16 @@ module.exports = class RecordDeleter {
 	 * @param {Query} query
 	 * @name {Recordset}
 	 */
-	constructor (query) {
+	constructor (query: Query) {
 		/** @type {Query} */
-		this.#query = query;
+		this.#query! = query;
 	}
 
 	/**
 	 * Placeholder for the "correct" SQL syntax
 	 * @returns {RecordDeleter}
 	 */
-	delete () {
+	delete (): RecordDeleter {
 		return this;
 	}
 
@@ -33,7 +35,7 @@ module.exports = class RecordDeleter {
 	 * @param {string} table
 	 * @returns {RecordDeleter}
 	 */
-	from (database, table) {
+	from (database: string, table: string): RecordDeleter {
 		this.#deleteFrom.database = database;
 		this.#deleteFrom.table = table;
 		return this;
@@ -46,10 +48,12 @@ module.exports = class RecordDeleter {
 	 * @param {Array.<string|FormatSymbol|WhereHavingParams>} args
 	 * @returns {RecordDeleter}
 	 */
-	where (...args) {
-		let options = {};
+	where (...args: Array<string | FormatSymbol | WhereHavingParams>): RecordDeleter {
+		let options: {
+			condition?: boolean;
+		} = {};
 		if (args[0] && args[0].constructor === Object) {
-			options = args[0];
+			options = args[0] as Object;
 			args.shift();
 		}
 
@@ -59,12 +63,12 @@ module.exports = class RecordDeleter {
 
 		let format = "";
 		if (typeof args[0] === "string") {
-			format = args.shift();
+			format = args.shift() as string;
 		}
 
 		let index = 0;
-		format = format.replace(this.#query.formatSymbolRegex, (fullMatch, param) => (
-			this.#query.parseFormatSymbol(param, args[index++])
+		format = format.replace(this.#query!.formatSymbolRegex, (fullMatch, param) => (
+			this.#query!.parseFormatSymbol(param, args[index++])
 		));
 
 		this.#where = this.#where.concat(format);
@@ -78,7 +82,7 @@ module.exports = class RecordDeleter {
 	 * @returns {RecordDeleter}
 	 * @throws {stolen_sb.Error} If no FROM database/table have been provided.
 	 */
-	confirm () {
+	confirm (): RecordDeleter {
 		this.#confirmedFullDelete = true;
 		return this;
 	}
@@ -88,8 +92,9 @@ module.exports = class RecordDeleter {
 	 * @returns {Promise<string[]>}
 	 * @throws {stolen_sb.Error} If no FROM database/table have been provided.
 	 */
-	async toSQL () {
+	async toSQL (): Promise<string[]> {
 		if (!this.#deleteFrom.database || !this.#deleteFrom.table) {
+				// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "No UPDATE database/table in RecordUpdater - invalid definition"
 			});
@@ -103,6 +108,7 @@ module.exports = class RecordDeleter {
 		}
 		else {
 			if (!this.#confirmedFullDelete) {
+				// @ts-ignore
 				throw new stolen_sb.Error({
 					message: "Unconfirmed full table deletion",
 					args: {
@@ -119,8 +125,8 @@ module.exports = class RecordDeleter {
 	 * Runs the UPDATE SQL query and returns the status object.
 	 * @returns {Object}
 	 */
-	async fetch () {
+	async fetch (): Promise<object> {
 		const sql = await this.toSQL();
-		return await this.#query.raw(...sql);
+		return await this.#query!.raw(...sql);
 	}
 };
