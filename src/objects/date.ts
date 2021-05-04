@@ -1,10 +1,9 @@
-// @ts-nocheck
 /**
  * Extended and simpler-to-use version of native Date
  * @memberof stolen_sb
  * @namespace Date
  */
-module.exports = class Date extends global.Date {
+export default class sbDate extends global.Date {
 	/**
 	 * Pads a number with specified number of zeroes.
 	 * @private
@@ -12,17 +11,17 @@ module.exports = class Date extends global.Date {
 	 * @param {number} padding
 	 * @returns {string}
 	 */
-	static zf(number, padding) {
+	static zf(number: number, padding: number): string {
 		return ("0".repeat(padding) + number).slice(-padding);
 	}
 
 	/**
 	 * Compares two instances for their equality
-	 * @param {stolen_sb.Date} from
-	 * @param {stolen_sb.Date} to
+	 * @param {sbDate} from
+	 * @param {sbDate} to
 	 * @returns {boolean}
 	 */
-	static equals(from, to) {
+	static equals(from: sbDate, to: sbDate): boolean {
 		const fromValue = from?.valueOf();
 		const toValue = to?.valueOf();
 		if (typeof fromValue !== "number") {
@@ -39,13 +38,13 @@ module.exports = class Date extends global.Date {
 	 * Creates the instance. Uses the same constructor as native Date does.
 	 * @param {*} args
 	 */
-	constructor(...args) {
-		if (args.length > 1 && args.every(i => typeof i === "number")) {
+	constructor(...args: any ) {
+		if (args.length > 1 && args.every((i: any) => typeof i === "number")) {
 			// Subtract one from the month parameter, because of how stupid the JS Date constructor does it.
 			args[1] = args[1] - 1;
 		}
 
-		super(...args);
+		super(...args as [any, any, any, any, any, any, any]);
 	}
 
 	/**
@@ -53,7 +52,7 @@ module.exports = class Date extends global.Date {
 	 * @param {string} formatString
 	 * @returns {string}
 	 */
-	format(formatString) {
+	format(formatString: string): string {
 		const year = this.year, month = this.month, day = this.day, hours = this.hours, minutes = this.minutes,
 			seconds = this.seconds, milli = this.milliseconds;
 
@@ -68,13 +67,13 @@ module.exports = class Date extends global.Date {
 					break;
 
 				case "d":
-					value += Date.zf(day, 2);
+					value += sbDate.zf(day, 2);
 					break;
 				case "j":
 					value += day;
 					break;
 				case "m":
-					value += Date.zf(month, 2);
+					value += sbDate.zf(month, 2);
 					break;
 				case "n":
 					value += month;
@@ -87,16 +86,16 @@ module.exports = class Date extends global.Date {
 					value += hours;
 					break;
 				case "H":
-					value += Date.zf(hours, 2);
+					value += sbDate.zf(hours, 2);
 					break;
 				case "i":
-					value += Date.zf(minutes, 2);
+					value += sbDate.zf(minutes, 2);
 					break;
 				case "s":
-					value += Date.zf(seconds, 2);
+					value += sbDate.zf(seconds, 2);
 					break;
 				case "v":
-					value += Date.zf(milli, 3);
+					value += sbDate.zf(milli, 3);
 					break;
 
 				default:
@@ -132,9 +131,9 @@ module.exports = class Date extends global.Date {
 
 	/**
 	 * @param {number} offset in minutes
-	 * @returns {stolen_sb.Date}
+	 * @returns {sbDate}
 	 */
-	setTimezoneOffset(offset) {
+	setTimezoneOffset(offset: number): sbDate {
 		offset = Number(offset);
 
 		if (Number.isNaN(offset)) {
@@ -151,9 +150,9 @@ module.exports = class Date extends global.Date {
 	/**
 	 * Sets the provided time units to zero.
 	 * @param {...<"h"|"m"|"s"|"ms">} units
-	 * @returns {stolen_sb.Date}
+	 * @returns {sbDate}
 	 */
-	discardTimeUnits(...units) {
+	discardTimeUnits(...units: Array<"h"|"m"|"s"|"ms">): sbDate {
 		for (const unit of units) {
 			switch (unit) {
 				case "h":
@@ -176,40 +175,40 @@ module.exports = class Date extends global.Date {
 	}
 
 	clone () {
-		return new this.constructor(this);
+		return new sbDate(this);
 	}
 
-	addYears(y) {
+	addYears(y: number) {
 		this.year += y;
 		return this;
 	}
 
-	addMonths(m) {
+	addMonths(m: number) {
 		this.month += m;
 		return this;
 	}
 
-	addDays(d) {
+	addDays(d: number) {
 		this.day += d;
 		return this;
 	}
 
-	addHours(h) {
+	addHours(h: number) {
 		this.hours += h;
 		return this;
 	}
 
-	addMinutes(m) {
+	addMinutes(m: number) {
 		this.minutes += m;
 		return this;
 	}
 
-	addSeconds(s) {
+	addSeconds(s: number) {
 		this.seconds += s;
 		return this;
 	}
 
-	addMilliseconds(ms) {
+	addMilliseconds(ms: number) {
 		this.milliseconds += ms;
 		return this;
 	}
@@ -283,3 +282,5 @@ module.exports = class Date extends global.Date {
 		super.setFullYear(y);
 	}
 };
+
+type functionParams<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : any;
