@@ -6,7 +6,7 @@ import Query from "./index"
 class Row {
 	query: Query;
 	/** 
-	 * This promise resolves when the Row has loaded.
+	 * This promise resolves when the Row finishes constructing.
 	 * @type {Promise<any>} 
 	 */
 	readyPromise: Promise<void> = new Promise(() => {});
@@ -281,4 +281,4 @@ class Row {
 	get loaded () { return this.#loaded; }
 };
 
-module.exports = Row;
+export default Row;

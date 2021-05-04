@@ -4,7 +4,7 @@ import { WhereHavingParams, FormatSymbol, ColumnDefinition } from './index';
 /**
  * Represents the UPDATE sql statement.
  */
-module.exports = class RecordUpdater {
+export default class RecordUpdater {
 	#query: Query|null = null;
 	#update: { database: string|null, table: string|null } = { database: null, table: null };
 	#set: { column: string, value: any }[] = [];
@@ -150,11 +150,8 @@ module.exports = class RecordUpdater {
 		return sql;
 	}
 
-	/**
-	 * Runs the UPDATE SQL query and returns the status object.
-	 * @returns {Object}
-	 */
-	async fetch (): Promise<object> {
+
+	async fetch (): Promise<any> {
 		const sql = await this.toSQL();
 		return await this.#query!.raw(...sql);
 	}

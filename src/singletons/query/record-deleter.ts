@@ -5,7 +5,7 @@ import { FormatSymbol, WhereHavingParams } from './index';
 /**
  * Represents the UPDATE sql statement.
  */
-module.exports = class RecordDeleter {
+export default class RecordDeleter {
 	#query: Query|null = null;
 	#deleteFrom: { database: string|null; table: string|null } = { database: null, table: null };
 	#where: string[] = [];

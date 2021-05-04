@@ -6,6 +6,9 @@ import { ColumnDefinition } from './index';
  * One instance is always locked to one table and some of its columns based on constructor.
  */
 class Batch {
+	/**
+	 * This promise resolves when the Batch finishes constructing.
+	 */
 	readyPromise: Promise<void> = (async() => {})();
 	query: Query|null = null;
 	database: string|null;
@@ -20,7 +23,6 @@ class Batch {
 	 * @param {string} db
 	 * @param {string} table
 	 * @param {string[]} columns
-	 * @returns {Promise<Batch>}
 	 * @throws stolen_sb.Error If a nonexistent column has been provided
 	 */
 	constructor (query: Query, db: string, table: string, columns: string[]) {
@@ -154,4 +156,4 @@ class Batch {
 type functionArguments<T extends Function> = T extends (...args: infer A) => any ? A : unknown;
 type NthArgType<N extends number, A extends Array<any>> = A extends Array<any> ? A[N] : unknown;
 
-export = Batch;
+export default Batch;
