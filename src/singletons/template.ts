@@ -1,5 +1,6 @@
 /** @interface */
 export default class TemplateSingletonModule {
+	static module: TemplateSingletonModule;
 	/**
 	 * Cleans up the module.
 	 * All sub-classes must implement this method.
@@ -13,7 +14,7 @@ export default class TemplateSingletonModule {
 	 * Constructs the singleton instance.
 	 * @returns {Promise<void>}
 	 */
-	static async singleton () {
+	static async singleton (): Promise<TemplateSingletonModule> {
 		throw new Error("Module.singleton is not implemented")
 	}
 
@@ -22,7 +23,7 @@ export default class TemplateSingletonModule {
 	 * All sub-classes must implement this getter.
 	 * @abstract
 	 */
-	get modulePath () {
+	get modulePath (): string {
 		throw new Error("get Module.modulePath is not implemented");
 	}
 };
