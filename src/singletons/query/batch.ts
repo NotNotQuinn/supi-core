@@ -1,10 +1,19 @@
-// @ts-nocheck
+import Query from './index';
+import { ColumnDefinition } from './index';
 /* global stolen_sb */
 /**
  * Represents the SQL INSERT statement for multiple rows.
  * One instance is always locked to one table and some of its columns based on constructor.
  */
-module.exports = class Batch {
+class Batch {
+	readyPromise: Promise<void> = (async() => {})();
+	query: Query|null = null;
+	database: string|null;
+	table: string|null;
+	records: any[]|null = [];
+	columns: ColumnDefinition[]|null = [];
+	ready: boolean|null = false;
+
 	/**
 	 * Creates a new Batch instance. Constructor must be await-ed.
 	 * @param {Query} query
@@ -14,37 +23,32 @@ module.exports = class Batch {
 	 * @returns {Promise<Batch>}
 	 * @throws stolen_sb.Error If a nonexistent column has been provided
 	 */
-	constructor (query, db, table, columns) {
-		/** @type {Query} */
-		this.query = query;
-		/** @type {string} */
-		this.database = db;
-		/** @type {string} */
-		this.table = table;
-		/** @type {Object[]} */
-		this.records = [];
-		/** @type {ColumnDefinition[]} */
-		this.columns = [];
-		/** @type {boolean} */
+	constructor (query: Query, db: string, table: string, columns: string[]) {
+		this.query! = query;
+		this.database! = db;
+		this.table! = table;
+		this.records! = [];
+		this.columns! = [];
 		this.ready = false;
 
-		return (async () => {
-			const definition = await this.query.getDefinition(db, table);
+		this.readyPromise = (async () => {
+			const definition = await this.query!.getDefinition(db, table);
 			for (const column of columns) {
 				if (definition.columns.every(col => column !== col.name)) {
+					// @ts-ignore
 					throw new stolen_sb.Error({
 						message: "Unrecognized Batch column",
 						args: {
+							database: db,
 							table: table,
-							column: definition.columns.filter(i => column.name !== i).map(i => i.name).join(", ")
+							column: definition.columns.filter(i => column !== i.name).map(i => i.name).join(", ")
 						}
 					});
 				}
 			}
 
-			this.columns = definition.columns.filter(column => columns.indexOf(column.name) !== -1);
+			this.columns! = definition.columns.filter(column => columns.indexOf(column.name) !== -1);
 			this.ready = true;
-			return this;
 		})();
 	}
 
@@ -53,16 +57,16 @@ module.exports = class Batch {
 	 * @param {Object} data
 	 * @returns {number} The index of added data record
 	 */
-	add (data) {
-		return (this.records.push(data) - 1);
+	add (data: object): number {
+		return (this.records!.push(data) - 1);
 	}
 
 	/**
 	 * Deletes a record based on its index
 	 * @param index
 	 */
-	delete (index) {
-		this.records.splice(index, 1);
+	delete (index: number) {
+		this.records!.splice(index, 1);
 	}
 
 	/**
@@ -70,8 +74,8 @@ module.exports = class Batch {
 	 * @param {Function} callback
 	 * @returns {Object|null} record
 	 */
-	find (callback) {
-		return this.records.find(callback);
+	find (callback: NthArgType<0, functionArguments< Array<Object>["find"] > > ): object | null {
+		return this.records!.find(callback) ?? null;
 	}
 
 	/**
@@ -82,25 +86,26 @@ module.exports = class Batch {
 	 * @param {Function} options.duplicate If set, will use the result of this callback to create ON DUPLICATE KEY clausule.
 	 * @returns {Promise<void>}
 	 */
-	async insert (options = {}) {
-		if (this.records.length === 0) {
+	async insert (options: { ignore?: boolean; duplicate?: Function } = {}): Promise<void> {
+		if (this.records!.length === 0) {
 			return;
 		}
 
 		let stringColumns = [];
-		let data = this.records.map(() => []);
-		for (const column of this.columns) {
+		let data: any[][] = this.records!.map(() => []);
+		for (const column of this.columns!) {
 			const name = column.name;
 			const type = column.type;
-			stringColumns.push(this.query.escapeIdentifier(name));
+			stringColumns.push(this.query!.escapeIdentifier(name));
 
-			for (let i = 0; i < this.records.length; i++) {
-				data[i].push(this.query.convertToSQL(this.records[i][name], type));
+			for (let i = 0; i < this.records!.length; i++) {
+				data[i].push(this.query!.convertToSQL(this.records![i][name], type));
 			}
 		}
 
 		const { duplicate, ignore } = options;
 		if (duplicate && ignore) {
+					// @ts-ignore
 			throw new stolen_sb.Error({
 				message: "Cannot set ignore and duplicate at the same time"
 			});
@@ -109,9 +114,9 @@ module.exports = class Batch {
 		data = data.filter(i => i.length !== 0);
 		if (data.length !== 0) {
 			try {
-				await this.query.raw([
+				await this.query!.raw([
 					`INSERT ${ignore ? "IGNORE" : ""} INTO`,
-					"`" + this.database + "`.`" + this.table + "`",
+					"`" + this.database! + "`.`" + this.table! + "`",
 					"(" + stringColumns.join(", ") + ")",
 					"VALUES ("  + data.map(row => row.join(", ")).join("), (") + ")",
 					(duplicate ? duplicate(data, stringColumns) : "")
@@ -129,7 +134,7 @@ module.exports = class Batch {
 	 * Clears all records from the instance.
 	 */
 	clear () {
-		this.records = [];
+		this.records! = [];
 	}
 
 	/**
@@ -144,3 +149,9 @@ module.exports = class Batch {
 		this.database = null;
 	}
 };
+
+// util types, I probibly dont need them but whatever.
+type functionArguments<T extends Function> = T extends (...args: infer A) => any ? A : unknown;
+type NthArgType<N extends number, A extends Array<any>> = A extends Array<any> ? A[N] : unknown;
+
+export = Batch;
