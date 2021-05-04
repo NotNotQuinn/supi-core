@@ -9,8 +9,8 @@ class Row {
 	 * This promise resolves when the Row has loaded.
 	 * @type {Promise<any>} 
 	 */
-	Ready: Promise<void> = new Promise(() => {});
-	#definition: TableDefinition = null;
+	readyPromise: Promise<void> = new Promise(() => {});
+	#definition: TableDefinition | null = null;
 	#primaryKey: null | number = null;
 	/** @type {typeof Row.#definition.columns} */
 	#primaryKeyField: any = null;
@@ -64,7 +64,7 @@ class Row {
 		/** @type {Query} */
 		this.query = query;
 
-		this.Ready = (async () => {
+		this.readyPromise = (async () => {
 			this.#definition = await query.getDefinition(database, table);
 			for (const column of this.#definition?.columns ?? []) {
 				this.#values[column.name] = Symbol.for("unset");
