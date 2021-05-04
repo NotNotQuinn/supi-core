@@ -185,8 +185,9 @@ declare class Query {
         ON_UPDATE_NOW_FLAG: number;
         NUM_FLAG: number;
     };
-};
-export = Query;
+}
+
+export default Query;
 export type TableDefinition = {
     /**
      * Database of table
