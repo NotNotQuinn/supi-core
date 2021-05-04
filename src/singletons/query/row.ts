@@ -1,5 +1,7 @@
 import { TableDefinition } from './index'
 import Query from "./index"
+import sbDate from '../../objects/date';
+import sbError from '../../objects/error';
 /**
  * Represents one row of a SQL database table.
  */
@@ -20,8 +22,7 @@ class Row {
 		/** @param {string} name */
 		get: (target, name: string) => {
 			if (typeof target[name] === "undefined") {
-				// @ts-ignore
-				throw new stolen_sb.Error({
+				throw new sbError({
 					message: "Getting value: Column " + name + " does not exist"
 				});
 			}
@@ -31,8 +32,7 @@ class Row {
 		/** @param {string} name */
 		set: (target, name: string, value) => {
 			if (typeof target[name] === "undefined") {
-				// @ts-ignore
-				throw new stolen_sb.Error({
+				throw new sbError({
 					message: "Setting value: Column " + name + " does not exist"
 				});
 			}
@@ -51,8 +51,7 @@ class Row {
 	 */
 	constructor (query: Query, database: string, table: string) {
 		if (!database || !table) {
-				// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "Row: database and table must be provided",
 				args: {
 					db: database,
@@ -85,8 +84,7 @@ class Row {
 	 */
 	async load (primaryKey: number, ignoreError: boolean = false): Promise<Row> {
 		if (typeof primaryKey === "undefined") {
-				// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "Primary key must be passed to Row.load"
 			});
 		}
@@ -107,8 +105,7 @@ class Row {
 				return this;
 			}
 			else {
-				// @ts-ignore
-				throw new stolen_sb.Error({
+				throw new sbError({
 					message: "Row load failed - no such PK",
 					args: {
 						primaryKeyField: this.fieldPK,
@@ -208,8 +205,7 @@ class Row {
 			this.#loaded = false;
 		}
 		else {
-				// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "In order to delete the row, it must be loaded.",
 				args: this.#definition
 			});
@@ -258,8 +254,7 @@ class Row {
 	get fieldPK () { return this.#primaryKeyField; }
 	get escapedPK () {
 		if (this.PK === null) {
-				// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "Row has no PK"
 			});
 		}
@@ -272,8 +267,7 @@ class Row {
 			return this.#definition.path;
 		}
 		else {
-				// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "This row has no definition, yet"
 			});
 		}

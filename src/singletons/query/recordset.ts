@@ -1,6 +1,7 @@
 import Query from './index';
-import { WhereHavingParams, FormatSymbol, TableDefinition, ColumnDefinition } from './index'
-/* global stolen_sb */
+import { WhereHavingParams, FormatSymbol } from './index'
+import sbError from '../../objects/error';
+
 /**
  * Represents the result of a SELECT statement with (usually) more than one result row.
  */
@@ -67,14 +68,13 @@ class Recordset {
 	 * Sets the LIMIT.
 	 * @param {number} number
 	 * @returns {Recordset}
-	 * @throws {stolen_sb.Error} If number is not a finite number
+	 * @throws {sbError} If number is not a finite number
 	 */
 	limit (number: number): Recordset {
 		this.#limit = Number(number);
 
 		if (!Number.isFinite(this.#limit)) {
-			// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "Limit must be a finite number",
 				args: number
 			});
@@ -87,14 +87,13 @@ class Recordset {
 	 * Sets the OFFSET.
 	 * @param {number} number
 	 * @returns {Recordset}
-	 * @throws {stolen_sb.Error} If number is not a finite number
+	 * @throws {sbError} If number is not a finite number
 	 */
 	offset (number: number): Recordset {
 		this.#offset = Number(number);
 
 		if (!Number.isFinite(this.#offset)) {
-			// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "Offset must be a finite number",
 				args: number
 			});
@@ -121,8 +120,7 @@ class Recordset {
 	 */
 	from (database: string, table: string): Recordset {
 		if (!database || !table) {
-			// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "Recordset: database and table must be provided",
 				args: {
 					db: database,
@@ -221,8 +219,7 @@ class Recordset {
 			this.#having = this.#having.concat(format);
 		}
 		else {
-			// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "Recordset: Unrecognized condition wrapper option",
 				args: arguments
 			})
@@ -260,8 +257,7 @@ class Recordset {
 			} = database;
 
 			if (!toTable || !toDatabase) {
-			// @ts-ignore
-				throw new stolen_sb.Error({
+				throw new sbError({
 					message: "Missing compulsory arguments for join",
 					args: target
 				});
@@ -383,8 +379,7 @@ class Recordset {
 			});
 		}
 		else {
-			// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "Too many missing table specifications"
 			});
 		}
@@ -408,7 +403,7 @@ class Recordset {
 	/**
 	 * Translates Recordset to its SQL representation
 	 * @returns {string[]}
-	 * @throws {stolen_sb.Error} If no SELECT statement has been provided. The entire Recordset makes no sense should this happen
+	 * @throws {sbError} If no SELECT statement has been provided. The entire Recordset makes no sense should this happen
 	 */
 	toSQL (): string[] {
 		if (this.#raw) {
@@ -416,8 +411,7 @@ class Recordset {
 		}
 
 		if (this.#select.length === 0) {
-			// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "No SELECT in Recordset - invalid definition"
 			});
 		}
@@ -460,8 +454,7 @@ class Recordset {
 		let result = [];
 		for (const row of rows) {
 			if (this.#flat && typeof row[this.#flat] === "undefined") {
-			// @ts-ignore
-				throw new stolen_sb.Error({
+				throw new sbError({
 					message: `Column ${this.#flat} is not included in the result`,
 					args: {
 						column: this.#flat,

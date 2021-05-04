@@ -1,6 +1,7 @@
-/* global stolen_sb */
 import Query from './index';
 import { WhereHavingParams, FormatSymbol, ColumnDefinition } from './index';
+import sbError from '../../objects/error';
+
 /**
  * Represents the UPDATE sql statement.
  */
@@ -25,8 +26,7 @@ export default class RecordUpdater {
 
 	priority (value: "normal" | "low") {
 		if (!["normal", "low"].includes(value)) {
-			// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "Incorrect priority value",
 				args: { value }
 			});
@@ -100,19 +100,17 @@ export default class RecordUpdater {
 	/**
 	 * Translates the RecordUpdater to its SQL representation.
 	 * @returns {Promise<string[]>}
-	 * @throws {stolen_sb.Error} If no UPDATE database/table have been provided.
-	 * @throws {stolen_sb.Error} If no SET columns have been provided.
+	 * @throws {sbError} If no UPDATE database/table have been provided.
+	 * @throws {sbError} If no SET columns have been provided.
 	 */
 	async toSQL (): Promise<string[]> {
 		if (!this.#update.database || !this.#update.table) {
-			// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "No UPDATE database/table in RecordUpdater - invalid definition"
 			});
 		}
 		else if (this.#set.length === 0) {
-			// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "No SET in RecordUpdater - invalid definition"
 			});
 		}
@@ -128,8 +126,7 @@ export default class RecordUpdater {
 		for (const { column, value } of this.#set) {
 			const definition = columns.find(i => i.name === column);
 			if (!definition) {
-			// @ts-ignore
-				throw new stolen_sb.Error({
+				throw new sbError({
 					message: `Unrecognized column "${column}"`
 				});
 			}

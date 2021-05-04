@@ -1,6 +1,7 @@
 import Query from './index';
 import { ColumnDefinition } from './index';
-/* global stolen_sb */
+import sbError from '../../objects/error';
+
 /**
  * Represents the SQL INSERT statement for multiple rows.
  * One instance is always locked to one table and some of its columns based on constructor.
@@ -23,7 +24,7 @@ class Batch {
 	 * @param {string} db
 	 * @param {string} table
 	 * @param {string[]} columns
-	 * @throws stolen_sb.Error If a nonexistent column has been provided
+	 * @throws sbError If a nonexistent column has been provided
 	 */
 	constructor (query: Query, db: string, table: string, columns: string[]) {
 		this.query! = query;
@@ -37,8 +38,7 @@ class Batch {
 			const definition = await this.query!.getDefinition(db, table);
 			for (const column of columns) {
 				if (definition.columns.every(col => column !== col.name)) {
-					// @ts-ignore
-					throw new stolen_sb.Error({
+					throw new sbError({
 						message: "Unrecognized Batch column",
 						args: {
 							database: db,
@@ -107,8 +107,7 @@ class Batch {
 
 		const { duplicate, ignore } = options;
 		if (duplicate && ignore) {
-					// @ts-ignore
-			throw new stolen_sb.Error({
+			throw new sbError({
 				message: "Cannot set ignore and duplicate at the same time"
 			});
 		}
