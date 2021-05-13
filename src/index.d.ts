@@ -6,3 +6,11 @@ export default _exports;
 export type sbQuery = sbQuery;
 export type sbDate = sbDate;
 export type sbError = sbError;
+
+declare global {
+    var stolen_sb: {
+        Query: sbQuery,
+        Date: sbDate,
+        Error: sbError,
+    }
+}
