@@ -2,7 +2,7 @@
   "name": "supi-core-query",
   "version": "2.1.0-stripped-for-query",
   "description": "Supinic's projects' core modules, created in a global namespace - but stipped down to a single module.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "dependencies": {
     "mariadb": "^2.5.2"
   },
