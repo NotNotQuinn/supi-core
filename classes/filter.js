@@ -191,12 +191,24 @@ module.exports = class Filter extends require("./template.js") {
 				}
 			}
 		}
-		else if (this.Type === "Cooldown" && typeof data === "number") {
-			if (typeof this.#filterData.override === "number") {
-				return this.#filterData.override;
+		else if (this.Type === "Cooldown" && (data === null || typeof data === "number")) {
+			const value = data ?? 0; // `null` cooldowns are treated as zero
+			const { multiplier, override, respect } = this.#filterData;
+
+			if (typeof override === "number") {
+				if (respect === false) {
+					return override;
+				}
+				else {
+					return (override > value) ? data : override;
+				}
 			}
-			else if (typeof this.#filterData.multiplier === "number") {
-				return Math.round(data * this.#filterData.multiplier);
+			else if (typeof multiplier === "number") {
+				if (data === null) {
+					return data;
+				}
+
+				return Math.round(value * multiplier);
 			}
 		}
 
@@ -335,7 +347,10 @@ module.exports = class Filter extends require("./template.js") {
 
 		let userTo = null;
 		const channel = options.channel ?? Symbol("private-message");
-		const localFilters = Filter.getLocals(null, options);
+		const localFilters = Filter.getLocals(null, {
+			...options,
+			skipUserCheck: true
+		});
 
 		if (command.Flags.whitelist) {
 			const whitelist = localFilters.find((
@@ -358,19 +373,21 @@ module.exports = class Filter extends require("./template.js") {
 		}
 
 		if (command.Flags.optOut && userTo) {
-			const optout = localFilters.find(i => (
+			const optout = localFilters.find(i =>
 				i.Type === "Opt-out"
 				&& i.User_Alias === userTo.ID
-			));
+			);
 
 			if (optout) {
 				const targetType = (optout.Invocation) ? "command invocation" : "command";
+				const targetAmount = (optout.Command) ? "this" : "every";
+
 				return {
 					success: false,
 					reason: "opt-out",
 					filter: optout,
 					reply: (optout.Response === "Auto")
-						? `🚫 That user has opted out from being the target of your ${targetType}!`
+						? `🚫 That user has opted out from being the target of ${targetAmount} ${targetType}!`
 						: (optout.Response === "Reason")
 							? optout.Reason
 							: null
@@ -388,12 +405,14 @@ module.exports = class Filter extends require("./template.js") {
 
 			if (block) {
 				const targetType = (block.Invocation) ? "command invocation" : "command";
+				const targetAmount = (block.Command) ? "this" : "every";
+
 				return {
 					success: false,
 					reason: "block",
 					filter: block,
 					reply: (block.Response === "Auto")
-						? `🚫 That user has opted out from being the target of your ${targetType}!`
+						? `⛔ That user has blocked you from being the target of ${targetAmount} ${targetType}!`
 						: (block.Response === "Reason")
 							? block.Reason
 							: null
@@ -409,7 +428,7 @@ module.exports = class Filter extends require("./template.js") {
 		if (blacklist) {
 			let reply = null;
 			if (blacklist.Response === "Reason") {
-				reply = blacklist.Response;
+				reply = blacklist.Reason;
 			}
 			else if (blacklist.Response === "Auto") {
 				if (blacklist.Channel && blacklist.User_Alias && blacklist.Command && blacklist.Invocation) {
@@ -562,7 +581,7 @@ module.exports = class Filter extends require("./template.js") {
 		let { string } = options;
 		const unpingUsers = await sb.User.getMultiple(filters.map(i => i.User_Alias));
 		for (const user of unpingUsers) {
-			const regex = new RegExp(String.raw `(^|[,:;\s]+)(${user.Name})([,:;\s]|$)`, "gi");
+			const regex = new RegExp(String.raw `(^|[@#,:;\s]+)(${user.Name})([,:;\s]|$)`, "gi");
 			string = string.replace(regex, (match, prefix, name, suffix) => (
 				`${prefix}${name[0]}\u{E0000}${name.slice(1)}${suffix}`
 			));
@@ -576,8 +595,15 @@ module.exports = class Filter extends require("./template.js") {
 		return filters[0] ?? null;
 	}
 
-	static async getFlags (options) {
-		return Filter.getLocals("Flags", options);
+	static getFlags (options) {
+		const flags = {};
+		const flagData = Filter.getLocals("Flags", options).sort((a, b) => a.priority - b.priority);
+
+		for (const flag of flagData) {
+			Object.assign(flags, flag.Data);
+		}
+
+		return flags;
 	}
 
 	static async reloadSpecific (...list) {
