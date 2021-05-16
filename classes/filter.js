@@ -6,6 +6,8 @@
 module.exports = class Filter extends require("./template.js") {
 	#filterData = null;
 
+	static data = [];
+
 	constructor (data) {
 		super();
 
@@ -86,45 +88,69 @@ module.exports = class Filter extends require("./template.js") {
 		}
 
 		if (this.Data) {
-			if (this.Type === "Args") {
+			if (this.Type === "Arguments") {
+				this.#filterData = [];
+
 				if (!this.Data.args) {
 					console.warn("Invalid Args filter - missing args object");
 				}
 				else {
-					this.#filterData = [];
-
 					for (const arg of this.Data.args) {
 						const obj = {};
-						if (i.type === "regex") {
-							obj.regex = new RegExp(i.value[0], i.value[1] ?? "");
+						if (arg.regex) {
+							if (arg.regex instanceof RegExp) {
+								obj.regex = arg.regex;
+							}
+							else if (Array.isArray(arg.regex) && arg.regex.every(i => typeof i === "string")) {
+								obj.regex = new RegExp(arg.regex[0], arg.regex[1] ?? "");
+							}
+							else if (typeof arg.regex === "string") {
+								const string = arg.regex.replace(/^\/|\/$/g, "");
+								const lastSlashIndex = string.lastIndexOf("/");
+
+								const regexBody = (lastSlashIndex !== -1) ? string.slice(0, lastSlashIndex) : string;
+								const flags = (lastSlashIndex !== -1) ? string.slice(lastSlashIndex + 1) : "";
+
+								try {
+									obj.regex = new RegExp(regexBody, flags);
+								}
+								catch (e) {
+									console.warn("Invalid string regex representation", e);
+									continue;
+								}
+							}
 						}
-						else if (i.type === "string") {
-							obj.string = i.value;
+						else if (arg.string) {
+							obj.string = arg.string;
 						}
 						else {
 							console.warn("Invalid filter Args item - type", { arg, filter: this.ID });
 							continue;
 						}
 
-						if (typeof i.index === "number") {
-							obj.index = i.index;
+						if (typeof arg.index === "number") {
+							obj.index = arg.index;
 							obj.range = [];
 						}
-						else if (Array.isArray(i.range === "number")) {
-							obj.range = [...i.range].slice(0, 2);
+						else if (Array.isArray(arg.range) && arg.range.every(i => typeof i === "number")) {
+							obj.range = [...arg.range].slice(0, 2);
 						}
-						else if (typeof i.range === "string") {
-							obj.range = i.range.split("..").map(Number).slice(0, 2);
+						else if (typeof arg.range === "string") {
+							obj.range = arg.range.split("..").map(Number).slice(0, 2);
 						}
 						else {
 							console.warn("Invalid filter Args item - index", { arg, filter: this.ID });
 							continue;
 						}
 
+						// Infinity is allowed specifically because it matches the <x, ..> range identifier
+						const allowed = obj.range.every(i => sb.Utils.isValidInteger(i) || i === Infinity);
+						if (!allowed) {
+							console.warn("Invalid numbers provided for filter Args range", { arg, filter: this.ID });
+							continue;
+						}
+
 						this.#filterData.push(obj);
-
-
-						console.warn("Invalid filter data - missing Args data", { filter: this.ID, data: this.Data });
 					}
 				}
 			}
@@ -179,17 +205,19 @@ module.exports = class Filter extends require("./template.js") {
 	 * @returns {*} Returned type depends on filter type - Args {boolean} or Cooldown {number}
 	 */
 	applyData (data) {
-		if (this.Type === "Args" && Array.isArray(data)) {
+		if (this.Type === "Arguments" && Array.isArray(data)) {
 			for (const item of this.#filterData) {
 				const { index, range, regex, string } = item;
 				for (let i = 0; i < data.length; i++) {
-					const positionCheck = (i === index || (range[0] <= index && index <= range[1]));
-					const valueCheck = ((string && data[i] === string) || (regex && data[i].test(regex)));
+					const positionCheck = (i === index || (range[0] <= i && i <= range[1]));
+					const valueCheck = ((string && data[i] === string) || (regex && regex.test(data[i])));
 					if (positionCheck && valueCheck) {
 						return true;
 					}
 				}
 			}
+
+			return false;
 		}
 		else if (this.Type === "Cooldown" && (data === null || typeof data === "number")) {
 			const value = data ?? 0; // `null` cooldowns are treated as zero
@@ -366,6 +394,23 @@ module.exports = class Filter extends require("./template.js") {
 					reply: command.Whitelist_Response ?? null
 				};
 			}
+		}
+
+		const argumentFilter = localFilters.find(i => i.Type === "Arguments" && i.applyData(options.args));
+		if (argumentFilter) {
+			const targetType = (argumentFilter.Invocation) ? "command invocation" : "command";
+			const targetAmount = (argumentFilter.Command) ? "this" : "any";
+
+			return {
+				success: false,
+				reason: "arguments",
+				filter: argumentFilter,
+				reply: (argumentFilter.Response === "Auto")
+					? `You cannot use this argument on this position for ${targetAmount} ${targetType}!`
+					: (argumentFilter.Response === "Reason")
+						? argumentFilter.Reason
+						: null
+			};
 		}
 
 		if ((command.Flags.optOut || command.Flags.block) && targetUser) {
@@ -649,6 +694,6 @@ module.exports = class Filter extends require("./template.js") {
  * @typedef {
  *   "Blacklist","Whitelist","Opt-out","Block",
  *   "Unping","Unmention","Cooldown","Flags",
- *   "Offline-only","Online-only","Args"
+ *   "Offline-only","Online-only","Arguments"
  * } FilterType
  */

@@ -191,6 +191,7 @@ class Command extends require("./template.js") {
 
 	// </editor-fold>
 
+	static data = [];
 	static #privateMessageChannelID = Symbol("private-message-channel");
 	static #serializableProperties = {
 		Name: { type: "string" },
@@ -641,16 +642,16 @@ class Command extends require("./template.js") {
 			const paramNames = command.Params.map(i => i.name);
 
 			let argsString = args.join(" ");
-			const quotesRegex = new RegExp(`(?<name>${paramNames.join("|")}):(?<!\\\\)"(?<value>.+?)(?<!\\\\)"`, "g");
+			const quotesRegex = new RegExp(`(?<name>${paramNames.join("|")}):(?<!\\\\)"(?<value>.*?)(?<!\\\\)"`, "g");
 			const quoteMatches = [...argsString.matchAll(quotesRegex)];
 
 			for (const match of quoteMatches.reverse()) {
 				argsString = argsString.slice(0, match.index) + argsString.slice(match.index + match[0].length + 1);
 
-				const { name, value } = match.groups;
+				const { name = null, value = null } = match.groups;
 				const { type } = command.Params.find(i => i.name === name);
 
-				if (name && value) {
+				if (name !== null && value !== null) {
 					const cleanValue = value.replace(/^"|"$/g, "").replace(/\\"/g, "\"");
 					const parsedValue = Command.parseParameter(cleanValue, type);
 					if (parsedValue === null) {
@@ -682,16 +683,16 @@ class Command extends require("./template.js") {
 			}
 
 			const remainingArgs = argsString.split(" ");
-			const paramRegex = new RegExp(`^(?<name>${paramNames.join("|")}):(?<value>.+)$`);
+			const paramRegex = new RegExp(`^(?<name>${paramNames.join("|")}):(?<value>.*)$`);
 			for (let i = remainingArgs.length - 1; i >= 0; i--) {
 				if (!paramRegex.test(remainingArgs[i])) {
 					continue;
 				}
 
-				const { name, value } = remainingArgs[i].match(paramRegex).groups;
+				const { name = null, value = null } = remainingArgs[i].match(paramRegex).groups;
 				const { type } = command.Params.find(i => i.name === name);
 
-				if (name && value) {
+				if (name !== null && value !== null) {
 					const parsedValue = Command.parseParameter(value, type);
 					if (parsedValue === null) {
 						sb.CooldownManager.unsetPending(userData.ID);
