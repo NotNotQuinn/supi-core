@@ -4,8 +4,12 @@ module.exports = (function () {
 	const Redis = require("ioredis");
 
 	const GROUP_DELIMITER = String.fromCharCode(7);
-	const ITEM_DELIMITER =  String.fromCharCode(8);
+	const ITEM_DELIMITER = String.fromCharCode(8);
 
+	/**
+	 * Redis caching module with methods to ease up item lookup.
+	 * @memberof sb
+	 */
 	return class Cache extends require("./template.js") {
 		/** @type {Redis} */
 		#server = null;
@@ -78,7 +82,7 @@ module.exports = (function () {
 			}
 
 			this.#server.disconnect();
-			this.#active = false
+			this.#active = false;
 		}
 
 		async set (data = {}) {
@@ -99,7 +103,7 @@ module.exports = (function () {
 			];
 
 			if (typeof data.specificKey === "string") {
-				args[0] += "-" + data.specificKey;
+				args[0] += `-${data.specificKey}`;
 			}
 
 			if (data.expiry && data.expiresAt) {

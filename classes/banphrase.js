@@ -1,3 +1,7 @@
+/**
+ * Represents a single output modifier that will change the output of the bot in specified channel/platform.
+ * @memberof sb
+ */
 module.exports = (function () {
 	"use strict";
 
@@ -10,7 +14,7 @@ module.exports = (function () {
 		static async pajbot (message, URL) {
 			const options = {
 				method: "POST",
-				url: "https://" + URL + "/api/v1/banphrases/test",
+				url: `https://${URL}/api/v1/banphrases/test`,
 				body: new sb.URLParams()
 					.set("message", message)
 					.toString(),
@@ -137,9 +141,9 @@ module.exports = (function () {
 			this.Active = !this.Active;
 			if (typeof this.ID === "number") {
 				await sb.Query.getRecordUpdater(ru => ru
-				    .update("chat_data", "Banphrase")
-				    .set("Active", this.Active)
-				    .where("ID = %n", this.ID)
+					.update("chat_data", "Banphrase")
+					.set("Active", this.Active)
+					.where("ID = %n", this.ID)
 				);
 			}
 		}
@@ -222,7 +226,7 @@ module.exports = (function () {
 					|| (banphrase.Channel === null && banphrase.Platform === channelData?.Platform.ID)
 					|| (banphrase.Platform === null)
 				)
-            ));
+			));
 
 			for (const banphrase of banphraseList) {
 				const result = await banphrase.execute(message);
@@ -321,8 +325,8 @@ module.exports = (function () {
 				// If not found, return a default one.
 				if (response !== false) {
 					const apiResponses = Banphrase.data.filter(banphrase => (
-						(banphrase.Type === "API response") &&
-						(banphrase.Channel === channelData.ID || banphrase.Channel === null)
+						(banphrase.Type === "API response")
+						&& (banphrase.Channel === channelData.ID || banphrase.Channel === null)
 					));
 
 					for (const response of apiResponses) {

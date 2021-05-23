@@ -1,3 +1,4 @@
+/* global describe, it */
 (async () => {
 	const assert = require("assert");
 	const Date = require("../objects/date.js");
@@ -23,10 +24,9 @@
 		const DAY = 24 * HOUR;
 		const YEAR = 365 * DAY;
 
-		const timeDelta = (target, skipAffixes, respectLeapYears, deltaTo) =>
-			sb.Utils.timeDelta(target, skipAffixes ?? false, respectLeapYears ?? false, deltaTo ?? new sb.Date(0));
+		const timeDelta = (target, skipAffixes, respectLeapYears, deltaTo) => sb.Utils.timeDelta(target, skipAffixes ?? false, respectLeapYears ?? false, deltaTo ?? new sb.Date(0));
 
-		it("checks types properly", function () {
+		it("checks types properly", () => {
 			assert.doesNotThrow(() => timeDelta(new Date()));
 			assert.doesNotThrow(() => timeDelta(new sb.Date()));
 			assert.doesNotThrow(() => timeDelta(12345));
@@ -64,8 +64,8 @@
 				const expectedLongString = `in ${i / 1000}s`;
 				const expectedShortString = `${i / 1000}s`;
 
-				assert.strictEqual(timeDelta(futureDate), expectedLongString, "Input: " + i);
-				assert.strictEqual(timeDelta(futureDate, true), expectedShortString, "Input: " + i);
+				assert.strictEqual(timeDelta(futureDate), expectedLongString, `Input: ${i}`);
+				assert.strictEqual(timeDelta(futureDate, true), expectedShortString, `Input: ${i}`);
 			}
 
 			for (let i = -1_000; i > -60_000; i -= 50) {
@@ -73,8 +73,8 @@
 				const expectedLongString = `${Math.abs(i) / 1000}s ago`;
 				const expectedShortString = `${Math.abs(i) / 1000}s`;
 
-				assert.strictEqual(timeDelta(pastDate), expectedLongString, "Input: " + i);
-				assert.strictEqual(timeDelta(pastDate, true), expectedShortString, "Input: " + i);
+				assert.strictEqual(timeDelta(pastDate), expectedLongString, `Input: ${i}`);
+				assert.strictEqual(timeDelta(pastDate, true), expectedShortString, `Input: ${i}`);
 			}
 		});
 
@@ -85,8 +85,8 @@
 			const rounded = [29995, 29996, 29997, 29998, 29999, 30000, 30001, 30002, 30003, 30004];
 			for (const time of rounded) {
 				const date = new sb.Date(time);
-				assert.strictEqual(timeDelta(date), expectedLongString, "Input: " + time);
-				assert.strictEqual(timeDelta(date, true), expectedShortString, "Input: " + time);
+				assert.strictEqual(timeDelta(date), expectedLongString, `Input: ${time}`);
+				assert.strictEqual(timeDelta(date, true), expectedShortString, `Input: ${time}`);
 			}
 		});
 
@@ -101,7 +101,7 @@
 					assert.strictEqual(
 						timeDelta(new sb.Date(time), true),
 						string,
-						"Input: " + time
+						`Input: ${time}`
 					);
 				}
 			}
@@ -118,7 +118,7 @@
 					assert.strictEqual(
 						timeDelta(new sb.Date(time), true),
 						string,
-						"Input: " + time
+						`Input: ${time}`
 					);
 				}
 			}
@@ -135,7 +135,7 @@
 					assert.strictEqual(
 						timeDelta(new sb.Date(time), true),
 						string,
-						"Input: " + time
+						`Input: ${time}`
 					);
 				}
 			}
@@ -152,7 +152,7 @@
 					assert.strictEqual(
 						timeDelta(new sb.Date(time), true),
 						string,
-						"Input: " + time
+						`Input: ${time}`
 					);
 				}
 			}
@@ -162,34 +162,34 @@
 			// now is 2020-01-01, the date to calculate to is 2030-01-01
 			assert.strictEqual(
 				timeDelta(
-					new sb.Date('January 5, 2030 00:00:00 UTC'),
+					new sb.Date("January 5, 2030 00:00:00 UTC"),
 					false,
 					true,
-					new sb.Date('January 1, 2020 00:00:00 UTC')
+					new sb.Date("January 1, 2020 00:00:00 UTC")
 				),
 				"in 10y, 4d"
-			)
+			);
 			// reverse
 			assert.strictEqual(
 				timeDelta(
-					new sb.Date('December 29, 2019 00:00:00 UTC'),
+					new sb.Date("December 29, 2019 00:00:00 UTC"),
 					false,
 					true,
-					new sb.Date('January 1, 2030 00:00:00 UTC')
+					new sb.Date("January 1, 2030 00:00:00 UTC")
 				),
 				"10y, 3d ago"
-			)
+			);
 
 			// mode with leap year calculation disabled
 			assert.strictEqual(
 				timeDelta(
-					new sb.Date('January 1, 2030 00:00:00 UTC'),
+					new sb.Date("January 1, 2030 00:00:00 UTC"),
 					true,
 					false,
-					new sb.Date('January 1, 2020 00:00:00 UTC')
+					new sb.Date("January 1, 2020 00:00:00 UTC")
 				),
 				"10y, 3d"
-			)
+			);
 		});
 	});
 })();

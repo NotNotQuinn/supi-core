@@ -1,6 +1,6 @@
 /**
  * Module for logging various events to database.
- * @type SystemLogger
+ * @memberof sb
  */
 module.exports = class SystemLogger extends require("./template.js") {
 	/**
@@ -74,9 +74,7 @@ module.exports = class SystemLogger extends require("./template.js") {
 
 	get modulePath () { return "system-log"; }
 
-	destroy () {
-
-	}
+	destroy () {}
 };
 
 /**

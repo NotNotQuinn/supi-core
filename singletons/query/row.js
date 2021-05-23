@@ -1,4 +1,3 @@
-/* global sb */
 /**
  * Represents one row of a SQL database table.
  * @type Row
@@ -75,7 +74,7 @@ module.exports = class Row {
 				args: { database, table }
 			});
 		}
-		
+
 		this.#definition = await this.#query.getDefinition(database, table);
 		for (const column of this.#definition.columns) {
 			this.#values[column.name] = Symbol.for("unset");
@@ -119,7 +118,7 @@ module.exports = class Row {
 
 		this.reset();
 
-		let conditions = [];
+		const conditions = [];
 		if (primaryKey.constructor === Object) {
 			for (const [key, value] of Object.entries(primaryKey)) {
 				const column = this.#definition.columns.find(i => i.name === key);
@@ -168,8 +167,8 @@ module.exports = class Row {
 		}
 
 		const data = await this.#query.raw([
-			"SELECT * FROM " + this.#definition.escapedPath,
-			"WHERE " + conditions.join(" AND ")
+			`SELECT * FROM ${this.#definition.escapedPath}`,
+			`WHERE ${conditions.join(" AND ")}`
 		].join(" "));
 
 		if (!data[0]) {
@@ -218,7 +217,9 @@ module.exports = class Row {
 		if (this.#loaded) { // UPDATE
 			const setColumns = [];
 			for (const column of this.#definition.columns) {
-				if (this.#originalValues[column.name] === this.#values[column.name]) continue;
+				if (this.#originalValues[column.name] === this.#values[column.name]) {
+					continue;
+				}
 
 				const identifier = this.#query.escapeIdentifier(column.name);
 				const value = this.#query.convertToSQL(this.#values[column.name], column.type);
@@ -232,14 +233,14 @@ module.exports = class Row {
 
 			const conditions = this._getPrimaryKeyConditions();
 			outputData = await this.#query.raw([
-				"UPDATE " + this.#definition.escapedPath,
-				"SET " + setColumns.join(", "),
-				"WHERE " + conditions.join(" AND ")
+				`UPDATE ${this.#definition.escapedPath}`,
+				`SET ${setColumns.join(", ")}`,
+				`WHERE ${conditions.join(" AND ")}`
 			].join(" "));
 		}
 		else { // INSERT
-			let columns = [];
-			let values = [];
+			const columns = [];
+			const values = [];
 			for (const column of this.#definition.columns) {
 				if (this.#values[column.name] === Symbol.for("unset")) {
 					continue;
@@ -253,9 +254,9 @@ module.exports = class Row {
 
 			// @todo use INSERT RETURNING, see below
 			outputData = await this.#query.send([
-				"INSERT " + ignore + "INTO " + this.#definition.escapedPath,
-				"(" + columns.join(",") + ")",
-				"VALUES (" + values.join(",") + ")"
+				`INSERT ${ignore}INTO ${this.#definition.escapedPath}`,
+				`(${columns.join(",")})`,
+				`VALUES (${values.join(",")})`
 			].join(" "));
 
 			if (outputData.insertId !== 0) {
@@ -288,8 +289,8 @@ module.exports = class Row {
 			const conditions = this._getPrimaryKeyConditions();
 
 			await this.#query.send([
-				"DELETE FROM " + this.#definition.escapedPath,
-				"WHERE " + conditions.join(" AND ")
+				`DELETE FROM ${this.#definition.escapedPath}`,
+				`WHERE ${conditions.join(" AND ")}`
 			].join(" "));
 
 			this.#loaded = false;
@@ -392,7 +393,7 @@ module.exports = class Row {
 	}
 
 	/** @type {Object} */
-	get valuesObject () { return Object.assign({}, this.#values); }
+	get valuesObject () { return { ...this.#values }; }
 
 	get values () { return this.#valueProxy; }
 	get originalValues () { return this.#originalValues; }

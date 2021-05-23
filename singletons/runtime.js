@@ -1,3 +1,8 @@
+/**
+ * Wrapper for all sorts of runtime statistics of a process.
+ * @deprecated Pending removal - should be replaced with `sb.Cache` calls instead.
+ * @memberof sb
+ */
 module.exports = class Runtime extends require("./template.js") {
 	#cachePrefix = "runtime";
 	#resetPending = {
@@ -5,6 +10,7 @@ module.exports = class Runtime extends require("./template.js") {
 		rejectedCommands: true,
 		banphraseTimeouts: true
 	};
+
 	#started = new sb.Date();
 
 	static singleton () {
@@ -16,6 +22,7 @@ module.exports = class Runtime extends require("./template.js") {
 
 	/**
 	 * Increments the used command counter by 1.
+	 * @deprecated Pending removal - the entire module should be replaced with `sb.Cache` calls instead.
 	 */
 	async incrementCommandsCounter () {
 		if (!sb.Cache || !sb.Cache.active) {
@@ -37,8 +44,9 @@ module.exports = class Runtime extends require("./template.js") {
 		}
 	}
 
-	/*
+	/**
 	 * Increments the rejected command counter by 1.
+	 * @deprecated Pending removal - the entire module should be replaced with `sb.Cache` calls instead.
 	 */
 	async incrementRejectedCommands () {
 		if (!sb.Cache || !sb.Cache.active) {
@@ -62,6 +70,7 @@ module.exports = class Runtime extends require("./template.js") {
 
 	/**
 	 * Increments the banphrase timeout counter by 1.
+	 * @deprecated Pending removal - the entire module should be replaced with `sb.Cache` calls instead.
 	 * @param {string|number} channel
 	 */
 	async incrementBanphraseTimeouts (channel) {
@@ -100,6 +109,10 @@ module.exports = class Runtime extends require("./template.js") {
 
 	get started () { return this.#started; }
 
+	/**
+	 * @deprecated Pending removal - the entire module should be replaced with `sb.Cache` calls instead.
+	 * @returns {Promise<number>}
+	 */
 	get commands () {
 		if (!sb.Cache || !sb.Cache.active) {
 			return 0;
@@ -110,6 +123,10 @@ module.exports = class Runtime extends require("./template.js") {
 		});
 	}
 
+	/**
+	 * @deprecated Pending removal - the entire module should be replaced with `sb.Cache` calls instead.
+	 * @returns {Promise<number>}
+	 */
 	get rejectedCommands () {
 		if (!sb.Cache || !sb.Cache.active) {
 			return 0;
@@ -120,6 +137,10 @@ module.exports = class Runtime extends require("./template.js") {
 		});
 	}
 
+	/**
+	 * @deprecated Pending removal - the entire module should be replaced with `sb.Cache` calls instead.
+	 * @returns {Promise<number>}
+	 */
 	get banphraseTimeouts () {
 		if (!sb.Cache || !sb.Cache.active) {
 			return 0;

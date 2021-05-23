@@ -30,7 +30,15 @@
   },
   "author": "Supinic",
   "license": "AGPL-3.0",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "mocha ./tests --recursive --exit"
+  },
   "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.1.0",
+    "eslint-plugin-unicorn": "^32.0.1",
     "mocha": "^8.1.0"
   }
 }

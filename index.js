@@ -1,5 +1,10 @@
-module.exports = (async function (namespace = "sb", options = {}) {
-	globalThis[namespace] = {};
+module.exports = (async function (namespace, options = {}) {
+	/**
+	 * Global namespace wrapper.
+	 * @namespace
+	 * @type {Object}
+	 */
+	globalThis.sb = {};
 
 	const files = [
 		"objects/date",
@@ -37,7 +42,11 @@ module.exports = (async function (namespace = "sb", options = {}) {
 		"classes/alias"
 	];
 
-	const { blacklist, whitelist, skipData = [] } = options;
+	const {
+		blacklist,
+		whitelist,
+		skipData = []
+	} = options;
 
 	console.groupCollapsed("module load performance");
 
@@ -51,25 +60,25 @@ module.exports = (async function (namespace = "sb", options = {}) {
 
 		const start = process.hrtime.bigint();
 		const [type] = file.split("/");
-		let component = require("./" + file);
+		const component = require(`./${file}`);
 
 		if (type === "objects") {
-			globalThis[namespace][component.name] = component;
+			sb[component.name] = component;
 		}
 		else if (type === "singletons") {
-			globalThis[namespace][component.name] = await component.singleton();
+			sb[component.name] = await component.singleton();
 		}
 		else if (type === "classes") {
 			if (skipData.includes(file)) {
-				globalThis[namespace][component.specificName ?? component.name] = component;
+				sb[component.specificName ?? component.name] = component;
 			}
 			else {
-				globalThis[namespace][component.specificName ?? component.name] = await component.initialize();
+				sb[component.specificName ?? component.name] = await component.initialize();
 			}
 		}
 
 		const end = process.hrtime.bigint();
-		console.log(component.name + " loaded in " + Number(end - start) / 1.0e6 + " ms");
+		console.log(`${component.name} loaded in ${Number(end - start) / 1e6} ms`);
 	}
 
 	console.groupEnd();

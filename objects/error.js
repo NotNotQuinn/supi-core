@@ -1,16 +1,14 @@
-/* global sb */
+/**
+ * Custom error object. Keeps arguments to provide more error context.
+ * @memberof sb
+ */
 module.exports = class Error extends global.Error {
-	/**
-	 * Custom error object - has arguments provided
-	 * @param {Object} obj
-	 * @param {Error} [error]
-	 */
 	constructor (obj, error) {
 		if (!obj || obj.constructor !== Object) {
 			throw new global.Error("sb.Error must receive an object as params");
 		}
 
-		const {message, args} = obj;
+		const { message, args } = obj;
 		super(message);
 
 		this.parentError = error ?? null;
@@ -18,7 +16,7 @@ module.exports = class Error extends global.Error {
 		this.date = new sb.Date();
 
 		if (args) {
-			this.message += "; args = " + JSON.stringify(args, null, 2);
+			this.message += `; args = ${JSON.stringify(args, null, 2)}`;
 		}
 
 		const stackDescriptor = Object.getOwnPropertyDescriptor(this, "stack");

@@ -1,6 +1,10 @@
+/**
+ * Represents a single `Got` instance with its own default options
+ * @memberof sb
+ */
 module.exports = (function () {
 	const FormData = require("form-data");
-	const GotModule = require("got");
+	const gotModule = require("got");
 	const SymbolName = Symbol("Name");
 
 	class Got extends require("./template.js") {
@@ -35,7 +39,7 @@ module.exports = (function () {
 					instance = parent.extend(options);
 				}
 				else {
-					instance = GotModule.extend(options);
+					instance = gotModule.extend(options);
 				}
 
 				instance[SymbolName] = row.Name;
@@ -87,7 +91,7 @@ module.exports = (function () {
 				delete gqlOptions.token;
 			}
 
-			return GotModule({ ...gqlOptions, ...options });
+			return gotModule({ ...gqlOptions, ...options });
 		}
 
 		static get instances () {
@@ -130,13 +134,13 @@ module.exports = (function () {
 				}
 			}
 
-			return GotModule(...args);
+			return gotModule(...args);
 		},
 
 		get: function (target, property) {
 			return (typeof target[property] !== "undefined")
 				? target[property]
-				: GotModule[property];
+				: gotModule[property];
 		}
 	});
 })();

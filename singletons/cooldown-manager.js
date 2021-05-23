@@ -1,7 +1,3 @@
-/**
- * Manages cooldowns for specification combinations of channel/user/command/platform.
- * @type CooldownManager
- */
 module.exports = (function () {
 	"use strict";
 
@@ -85,15 +81,14 @@ module.exports = (function () {
 
 	/**
 	 * Manages the cooldowns between each message sent to channels.
-	 * @name sb.CooldownManager
-	 * @type CooldownManager()
+	 * @memberof sb
 	 */
 	class CooldownManager extends require("./template.js") {
 		/**
 		 * @inheritDoc
 		 * @returns {CooldownManager}
 		 */
-		static singleton() {
+		static singleton () {
 			if (!CooldownManager.module) {
 				CooldownManager.module = new CooldownManager();
 			}
@@ -215,7 +210,6 @@ module.exports = (function () {
 				&& (i.user === user)
 				&& (i.expires !== 0)
 			);
-
 		}
 
 		/**
