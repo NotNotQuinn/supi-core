@@ -19,7 +19,7 @@
     "mariadb": "^2.5.2",
     "random-js": "^2.1.0",
     "rss-parser": "^3.10.0",
-    "supibot-package-manager": "github:supinic/supibot-package-manager",
+    "supibot-package-manager": "github:notnotquinn/supibot-package-manager#remove-supinic-specific",
     "track-link-parser": "github:supinic/track-link-parser",
     "transliteration": "^2.2.0",
     "vm2": "^3.9.6"
